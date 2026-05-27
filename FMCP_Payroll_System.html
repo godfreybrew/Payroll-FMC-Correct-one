@@ -1,0 +1,1848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FMCP — Franklyn Medical Centre Payroll System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  [x-cloak] { display: none !important; }
+  * { font-family: 'DM Sans', sans-serif; box-sizing: border-box; }
+  h1,h2,h3,h4,.font-lexend,.kpi-num,.modal-title,.wizard-label,.step-label,.badge-text,.sidebar-label { font-family: 'Lexend', sans-serif; }
+
+  :root {
+    --sidebar-dark: #0C1D10;
+    --brand-green: #166534;
+    --mid-green: #16A34A;
+    --light-green: #4ADE80;
+    --accent-blue: #0284C7;
+    --alert-red: #DC2626;
+    --alert-amber: #D97706;
+    --page-bg: #F0F4F1;
+    --card-surface: #FFFFFF;
+    --primary-text: #1E293B;
+    --secondary-text: #475569;
+  }
+
+  body { background: var(--page-bg); }
+
+  /* ── Animations ── */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(100px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes loginFade {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    15%      { transform: translateX(-6px); }
+    30%      { transform: translateX(6px); }
+    45%      { transform: translateX(-5px); }
+    60%      { transform: translateX(5px); }
+    75%      { transform: translateX(-4px); }
+    90%      { transform: translateX(4px); }
+  }
+  @keyframes pulseDot {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.97) translateY(4px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  @keyframes appReveal {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .anim-fadeIn   { animation: fadeIn 0.3s ease forwards; }
+  .anim-modalIn  { animation: modalIn 0.25s ease forwards; }
+  .anim-toastIn  { animation: toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+  .anim-loginFade{ animation: loginFade 0.6s ease forwards; }
+  .anim-shake    { animation: shake 0.45s ease; }
+  .anim-pulseDot { animation: pulseDot 2s infinite; }
+  .anim-popIn    { animation: popIn 0.18s ease forwards; }
+  .anim-appReveal{ animation: appReveal 0.5s ease forwards; }
+
+  /* ── Login background ── */
+  .login-bg {
+    background: var(--sidebar-dark);
+    position: relative;
+    overflow: hidden;
+  }
+  .login-bg::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+  .blob1 { position:absolute; top:-10%; left:-5%; width:500px; height:500px; border-radius:50%; background: radial-gradient(circle, rgba(22,101,52,0.35) 0%, transparent 70%); pointer-events:none; }
+  .blob2 { position:absolute; bottom:-10%; right:-5%; width:450px; height:450px; border-radius:50%; background: radial-gradient(circle, rgba(220,38,38,0.2) 0%, transparent 70%); pointer-events:none; }
+  .blob3 { position:absolute; bottom:20%; left:30%; width:300px; height:300px; border-radius:50%; background: radial-gradient(circle, rgba(22,163,74,0.15) 0%, transparent 70%); pointer-events:none; }
+
+  .glass-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  /* ── Sidebar ── */
+  .sidebar { background: var(--sidebar-dark); width: 240px; flex-shrink: 0; }
+  .nav-item { transition: background 0.15s, color 0.15s; cursor: pointer; border-left: 3px solid transparent; }
+  .nav-item:hover { background: rgba(74,222,128,0.08); }
+  .nav-item.active { background: rgba(74,222,128,0.15); border-left-color: #4ADE80; }
+  .nav-item.active .nav-text { color: #4ADE80 !important; }
+  .nav-item.active .nav-icon { color: #4ADE80 !important; }
+
+  /* ── Cards ── */
+  .card { background: #fff; border-radius: 16px; border: 1px solid #e8eef0; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: transform 0.18s ease, box-shadow 0.18s ease; }
+  .card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.09); }
+
+  /* ── Tables ── */
+  .data-table thead tr { background: #f8fafb; }
+  .data-table tbody tr { border-top: 1px solid #f1f5f9; transition: background 0.12s; }
+  .data-table tbody tr:hover { background: #f0fdf4; }
+
+  /* ── Inputs ── */
+  .fmcp-input {
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    background: #fff;
+    color: var(--primary-text);
+  }
+  .fmcp-input:focus { border-color: #16A34A; box-shadow: 0 0 0 3px rgba(22,163,74,0.12); }
+  .fmcp-input.error { border-color: #DC2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.1); }
+  .fmcp-select {
+    border: 1px solid #cbd5e1; border-radius: 12px; padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; width: 100%;
+    outline: none; background: #fff; color: var(--primary-text);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 10px center; background-repeat: no-repeat; background-size: 18px;
+  }
+  .fmcp-select:focus { border-color: #16A34A; box-shadow: 0 0 0 3px rgba(22,163,74,0.12); }
+
+  /* ── Buttons ── */
+  .btn-primary { background: #166534; color: #fff; border-radius: 12px; padding: 10px 20px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background 0.15s, transform 0.1s; }
+  .btn-primary:hover { background: #14532d; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-secondary { background: #f1f5f9; color: #1e293b; border-radius: 12px; padding: 10px 20px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background 0.15s; }
+  .btn-secondary:hover { background: #e2e8f0; }
+  .btn-danger { background: #DC2626; color: #fff; border-radius: 12px; padding: 10px 20px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background 0.15s; }
+  .btn-danger:hover { background: #b91c1c; }
+  .btn-blue { background: #0284C7; color: #fff; border-radius: 12px; padding: 10px 20px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background 0.15s; }
+  .btn-blue:hover { background: #0369a1; }
+  .btn-amber { background: #D97706; color: #fff; border-radius: 12px; padding: 10px 20px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background 0.15s; }
+  .btn-amber:hover { background: #b45309; }
+
+  /* ── Step wizard ── */
+  .step-line { height: 2px; background: #e2e8f0; flex: 1; }
+  .step-line.done { background: #16A34A; }
+
+  /* ── Staff card ── */
+  .staff-card { background: #fff; border-radius: 16px; border: 1px solid #e8eef0; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: transform 0.18s ease, box-shadow 0.18s ease; overflow: hidden; cursor: pointer; }
+  .staff-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+
+  /* ── Avatar ── */
+  .avatar { border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Lexend', sans-serif; font-weight: 700; color: #fff; text-transform: uppercase; flex-shrink: 0; }
+
+  /* ── Scrollable ── */
+  .scrollable { overflow-y: auto; }
+  .scrollable::-webkit-scrollbar { width: 4px; }
+  .scrollable::-webkit-scrollbar-track { background: transparent; }
+  .scrollable::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+
+  /* ── Badge ── */
+  .badge { font-family: 'Lexend', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; border-radius: 6px; display: inline-flex; align-items: center; }
+
+  /* ── Tax band bars ── */
+  .tax-bar { height: 6px; border-radius: 3px; background: var(--mid-green); }
+
+  /* ── Print styles ── */
+  @media print {
+    body * { visibility: hidden; }
+    #payslip-print-area, #payslip-print-area * { visibility: visible; }
+    #payslip-print-area { position: fixed; inset: 0; background: white; z-index: 99999; }
+  }
+
+  /* ── Responsive overflow ── */
+  .overflow-x-auto { overflow-x: auto; }
+  .min-w-table { min-width: 900px; }
+</style>
+</head>
+
+<body x-data="fmcp()" x-init="init()" x-cloak class="min-h-screen">
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- LOGIN SCREEN -->
+<!-- ══════════════════════════════════════════════════ -->
+<div x-show="!isLoggedIn" class="login-bg min-h-screen flex flex-col items-center justify-center relative">
+  <div class="blob1"></div>
+  <div class="blob2"></div>
+  <div class="blob3"></div>
+
+  <!-- Login Card -->
+  <div class="glass-card rounded-2xl p-10 w-full max-w-sm relative z-10 anim-loginFade"
+       :class="{ 'anim-shake': loginShake }">
+
+    <!-- Logo -->
+    <div class="flex justify-center mb-6">
+      <div class="flex flex-col items-center gap-1">
+        <svg width="200" height="56" viewBox="0 0 200 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0" y="0" width="200" height="56" rx="10" fill="#0C1D10"/>
+          <rect x="8" y="8" width="36" height="40" rx="8" fill="#DC2626"/>
+          <text x="26" y="33" text-anchor="middle" font-family="Lexend,sans-serif" font-weight="800" font-size="22" fill="#FFFFFF">H</text>
+          <text x="58" y="26" font-family="Lexend,sans-serif" font-weight="800" font-size="16" fill="#FFFFFF" letter-spacing="2">FRANKLYN</text>
+          <text x="58" y="43" font-family="Lexend,sans-serif" font-weight="400" font-size="10" fill="rgba(255,255,255,0.65)" letter-spacing="3">MEDICAL CENTRE</text>
+        </svg>
+      </div>
+    </div>
+
+    <h1 class="text-center text-white text-xl font-bold mb-1" style="font-family:'Lexend',sans-serif">Payroll System</h1>
+    <p class="text-center text-xs font-semibold tracking-widest mb-6" style="color:rgba(74,222,128,0.8);font-family:'Lexend',sans-serif">SECURE ADMIN PORTAL</p>
+
+    <!-- Error Banner -->
+    <div x-show="loginError" x-cloak class="bg-red-600/90 text-white text-sm rounded-xl px-4 py-3 mb-4 flex items-center gap-2">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      <span x-text="loginError"></span>
+    </div>
+
+    <!-- Username -->
+    <div class="mb-3 relative">
+      <span class="absolute left-4 top-1/2 -translate-y-1/2" style="color:rgba(255,255,255,0.35)"><i class="fa-solid fa-user text-sm"></i></span>
+      <input x-model="loginUsername" @keydown.enter="doLogin()"
+        type="text" placeholder="Enter username"
+        class="w-full rounded-xl py-3 pl-11 pr-4 text-sm outline-none"
+        style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:#fff;font-family:'DM Sans',sans-serif;"
+        :style="loginUsername ? '' : ''">
+    </div>
+
+    <!-- Password -->
+    <div class="mb-5 relative">
+      <span class="absolute left-4 top-1/2 -translate-y-1/2" style="color:rgba(255,255,255,0.35)"><i class="fa-solid fa-lock text-sm"></i></span>
+      <input x-model="loginPassword" @keydown.enter="doLogin()"
+        :type="showLoginPassword ? 'text' : 'password'" placeholder="Enter password"
+        class="w-full rounded-xl py-3 pl-11 pr-12 text-sm outline-none"
+        style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:#fff;font-family:'DM Sans',sans-serif;">
+      <button @click="showLoginPassword=!showLoginPassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-sm" style="color:rgba(255,255,255,0.4);background:none;border:none;cursor:pointer;">
+        <i :class="showLoginPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+      </button>
+    </div>
+
+    <!-- Sign In Button -->
+    <button @click="doLogin()" :disabled="loginLoading"
+      class="w-full btn-primary justify-center py-3 text-base mb-4"
+      style="background:#16A34A;border-radius:12px;" :class="{'opacity-70 cursor-not-allowed': loginLoading}">
+      <template x-if="loginLoading">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+      </template>
+      <template x-if="!loginLoading">
+        <i class="fa-solid fa-right-to-bracket"></i>
+      </template>
+      <span x-text="loginLoading ? 'Authenticating...' : 'Sign In to FMCP'"></span>
+    </button>
+
+    <p class="text-center text-xs" style="color:rgba(255,255,255,0.25)">Demo credentials: 12345 / 12345</p>
+  </div>
+
+  <p class="mt-8 text-xs relative z-10" style="color:rgba(255,255,255,0.2)">
+    Franklyn Medical Centre &nbsp;·&nbsp; FMCP v2.0 &nbsp;·&nbsp; AES-256 Encrypted
+  </p>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- APP SHELL -->
+<!-- ══════════════════════════════════════════════════ -->
+<div x-show="isLoggedIn" x-cloak class="flex h-screen overflow-hidden anim-appReveal">
+
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar flex flex-col h-full overflow-y-auto" style="flex-shrink:0;width:240px;">
+    <!-- Logo -->
+    <div class="px-5 py-5 border-b" style="border-color:rgba(255,255,255,0.06)">
+      <svg width="160" height="44" viewBox="0 0 160 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="160" height="44" rx="8" fill="#111f14"/>
+        <rect x="6" y="6" width="28" height="32" rx="6" fill="#DC2626"/>
+        <text x="20" y="26" text-anchor="middle" font-family="Lexend,sans-serif" font-weight="800" font-size="17" fill="#FFFFFF">H</text>
+        <text x="44" y="20" font-family="Lexend,sans-serif" font-weight="800" font-size="12" fill="#FFFFFF" letter-spacing="1.5">FRANKLYN</text>
+        <text x="44" y="34" font-family="Lexend,sans-serif" font-weight="400" font-size="8" fill="rgba(255,255,255,0.5)" letter-spacing="2">MEDICAL CENTRE</text>
+      </svg>
+      <p class="mt-2 text-xs font-semibold tracking-widest" style="color:rgba(74,222,128,0.5);font-family:'Lexend',sans-serif">PAYROLL SYSTEM</p>
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex-1 py-4 px-2">
+      <div @click="currentView='dashboard'" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl mb-1" :class="{'active': currentView==='dashboard'}">
+        <i class="fa-solid fa-house-chimney text-sm nav-icon" :style="currentView==='dashboard' ? 'color:#4ADE80' : 'color:rgba(255,255,255,0.4)'"></i>
+        <span class="text-sm font-medium nav-text" :style="currentView==='dashboard' ? 'color:#4ADE80' : 'color:rgba(255,255,255,0.7)'">Command Centre</span>
+      </div>
+      <div @click="currentView='wizard'; wizardStep=1" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl mb-1 justify-between" :class="{'active': currentView==='wizard'}">
+        <div class="flex items-center gap-3">
+          <i class="fa-solid fa-wand-magic-sparkles text-sm nav-icon" :style="currentView==='wizard' ? 'color:#4ADE80' : 'color:rgba(255,255,255,0.4)'"></i>
+          <span class="text-sm font-medium nav-text" :style="currentView==='wizard' ? 'color:#4ADE80' : 'color:rgba(255,255,255,0.7)'">Payroll Wizard</span>
+        </div>
+        <span class="badge text-xs" style="background:#D97706;color:#fff;font-size:9px;">RUN</span>
+      </div>
+      <div @click="currentView='staff'" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl mb-1 justify-between" :class="{'active': currentView==='staff'}">
+        <div class="flex items-center gap-3">
+          <i class="fa-solid fa-people-group text-sm nav-icon" :style="currentView==='staff' ? 'color:#4ADE80' : 'color:rgba(255,255,255,0.4)'"></i>
+          <span class="text-sm font-medium nav-text" :style="currentView==='staff' ? 'color:#4ADE80' : 'color:rgba(255,255,255,0.7)'">Staff & Documents</span>
+        </div>
+        <span x-show="missingDetailsCount > 0" class="badge" style="background:#DC2626;color:#fff;font-size:9px;" x-text="missingDetailsCount"></span>
+      </div>
+      <div @click="currentView='compliance'" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl mb-1" :class="{'active': currentView==='compliance'}">
+        <i class="fa-solid fa-shield-halved text-sm nav-icon" :style="currentView==='compliance' ? 'color:#4ADE80' : 'color:rgba(255,255,255,0.4)'"></i>
+        <span class="text-sm font-medium nav-text" :style="currentView==='compliance' ? 'color:#4ADE80' : 'color:rgba(255,255,255,0.7)'">Compliance & Rates</span>
+      </div>
+    </nav>
+
+    <!-- User Panel -->
+    <div class="px-3 py-3 border-t relative" style="border-color:rgba(255,255,255,0.06)">
+      <div @click.stop="showUserMenu=!showUserMenu" class="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer hover:bg-white/5 transition-colors">
+        <div class="avatar" style="width:36px;height:36px;background:#16A34A;font-size:13px;">HR</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold text-white truncate" style="font-family:'Lexend',sans-serif">HR Admin</p>
+          <p class="text-xs truncate" style="color:rgba(255,255,255,0.4)">hr@franklyn.gh</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="anim-pulseDot w-2 h-2 rounded-full" style="background:#4ADE80;display:inline-block;"></span>
+          <i class="fa-solid fa-chevron-up text-xs" style="color:rgba(255,255,255,0.3);" :class="showUserMenu ? 'fa-chevron-down' : 'fa-chevron-up'"></i>
+        </div>
+      </div>
+      <!-- User Popup -->
+      <div x-show="showUserMenu" x-cloak @click.outside="showUserMenu=false"
+           class="absolute left-3 right-3 bottom-20 rounded-xl overflow-hidden anim-popIn"
+           style="background:#1a2e1e;border:1px solid rgba(255,255,255,0.1);box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:50;">
+        <div @click="currentView='compliance'; showUserMenu=false" class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-white/5 cursor-pointer transition-colors" style="color:rgba(255,255,255,0.8)">
+          <i class="fa-solid fa-list-check text-xs" style="color:rgba(74,222,128,0.7)"></i> View Audit Log
+        </div>
+        <div class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-white/5 cursor-pointer transition-colors" style="color:rgba(255,255,255,0.8)">
+          <i class="fa-solid fa-gear text-xs" style="color:rgba(74,222,128,0.7)"></i> Settings
+        </div>
+        <div style="height:1px;background:rgba(255,255,255,0.06)"></div>
+        <div @click="confirmLogout()" class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-red-900/20 cursor-pointer transition-colors" style="color:#f87171">
+          <i class="fa-solid fa-right-from-bracket text-xs"></i> Sign Out
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAIN AREA ── -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Top Header -->
+    <header class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between flex-shrink-0" style="min-height:64px;">
+      <div>
+        <h1 class="text-lg font-bold text-slate-800" style="font-family:'Lexend',sans-serif" x-text="pageTitle()"></h1>
+        <p class="text-xs text-slate-400 mt-0.5">Wednesday, 28 May 2026 &nbsp;·&nbsp; May 2026 Payroll Cycle</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-xl" style="background:#FEF3C7;color:#D97706;border:1px solid #FCD34D;">
+          <i class="fa-solid fa-triangle-exclamation text-xs"></i> GRA Filing: 3 days
+        </span>
+        <button @click="currentView='wizard'; wizardStep=1" class="btn-primary text-sm py-2 px-4">
+          <i class="fa-solid fa-wand-magic-sparkles text-xs"></i> Run May Payroll
+        </button>
+      </div>
+    </header>
+
+    <!-- View Content -->
+    <main class="flex-1 overflow-y-auto p-6" style="background:var(--page-bg);">
+
+      <!-- ══ VIEW: DASHBOARD ══ -->
+      <div x-show="currentView==='dashboard'" class="anim-fadeIn">
+        <!-- KPI Row -->
+        <div class="grid grid-cols-4 gap-4 mb-6">
+          <!-- KPI 1 -->
+          <div class="card p-5">
+            <div class="flex items-start justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:#dcfce7">
+                <i class="fa-solid fa-coins" style="color:#16A34A"></i>
+              </div>
+              <span class="badge" style="background:#f0fdf4;color:#16A34A;border:1px solid #bbf7d0;font-size:9px">+2.4% vs Apr</span>
+            </div>
+            <p class="text-2xl font-bold kpi-num" style="color:#166534" x-text="'GHS ' + formatNum(totalPayrollCost)"></p>
+            <p class="text-xs font-medium mt-1" style="color:#475569">Total Monthly Payroll Cost</p>
+          </div>
+          <!-- KPI 2 -->
+          <div class="card p-5">
+            <div class="flex items-start justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:#fef9c3">
+                <i class="fa-solid fa-calendar-check" style="color:#D97706"></i>
+              </div>
+              <span class="badge" style="background:#fef9c3;color:#D97706;border:1px solid #fde68a;font-size:9px">URGENT</span>
+            </div>
+            <p class="text-2xl font-bold kpi-num" style="color:#D97706">3 days</p>
+            <p class="text-xs font-medium mt-1" style="color:#475569">GRA PAYE Filing · Deadline: 31 May 2026</p>
+          </div>
+          <!-- KPI 3 -->
+          <div class="card p-5">
+            <div class="flex items-start justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:#e0f2fe">
+                <i class="fa-solid fa-building-columns" style="color:#0284C7"></i>
+              </div>
+              <span class="badge" style="background:#e0f2fe;color:#0284C7;border:1px solid #bae6fd;font-size:9px">UPCOMING</span>
+            </div>
+            <p class="text-2xl font-bold kpi-num" style="color:#0284C7">12 days</p>
+            <p class="text-xs font-medium mt-1" style="color:#475569">SSNIT Contribution · Deadline: 9 Jun 2026</p>
+          </div>
+          <!-- KPI 4 -->
+          <div class="card p-5">
+            <div class="flex items-start justify-between mb-3">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center" :style="missingDetailsCount > 0 ? 'background:#fee2e2' : 'background:#dcfce7'">
+                <i class="fa-solid fa-credit-card" :style="missingDetailsCount > 0 ? 'color:#DC2626' : 'color:#16A34A'"></i>
+              </div>
+              <span x-show="missingDetailsCount > 0" class="badge" style="background:#fee2e2;color:#DC2626;border:1px solid #fca5a5;font-size:9px" x-text="missingDetailsCount + ' missing'"></span>
+              <span x-show="missingDetailsCount === 0" class="badge" style="background:#dcfce7;color:#16A34A;border:1px solid #bbf7d0;font-size:9px">ALL CLEAR</span>
+            </div>
+            <p class="text-2xl font-bold kpi-num" :style="missingDetailsCount > 0 ? 'color:#DC2626' : 'color:#16A34A'" x-text="missingDetailsCount"></p>
+            <p class="text-xs font-medium mt-1" style="color:#475569">Missing Payment Details</p>
+          </div>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="grid gap-4" style="grid-template-columns: 2fr 1fr;">
+          <!-- Document Request Queue -->
+          <div class="card p-0 overflow-hidden">
+            <div class="px-5 py-4 flex items-center justify-between border-b border-slate-100">
+              <h3 class="font-bold text-slate-800" style="font-family:'Lexend',sans-serif">Document Request Queue</h3>
+              <span x-show="documentRequests.length > 0" class="badge" style="background:#fee2e2;color:#DC2626;border:1px solid #fca5a5;" x-text="documentRequests.length + ' pending'"></span>
+              <span x-show="documentRequests.length === 0" class="badge" style="background:#dcfce7;color:#16A34A;border:1px solid #bbf7d0;">All Cleared</span>
+            </div>
+            <div x-show="documentRequests.length === 0" class="py-10 text-center">
+              <i class="fa-solid fa-inbox text-2xl mb-2" style="color:#94a3b8"></i>
+              <p class="text-sm" style="color:#94a3b8">No pending document requests</p>
+            </div>
+            <div x-show="documentRequests.length > 0">
+              <template x-for="req in documentRequests" :key="req.id">
+                <div class="flex items-center gap-4 px-5 py-3 border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                  <div class="avatar flex-shrink-0" :style="'width:38px;height:38px;background:' + getAvatarColor(req.name) + ';font-size:12px'" x-text="getInitials(req.name)"></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-slate-800 truncate" x-text="req.name"></p>
+                    <p class="text-xs text-slate-500 truncate" x-text="req.document"></p>
+                  </div>
+                  <div class="text-center flex-shrink-0">
+                    <span class="badge text-xs" :style="req.channel==='WhatsApp' ? 'background:#dcfce7;color:#16A34A' : req.channel==='Email' ? 'background:#e0f2fe;color:#0284C7' : 'background:#f1f5f9;color:#475569'" x-text="req.channel"></span>
+                    <p class="text-xs text-slate-400 mt-1" x-text="req.timeAgo"></p>
+                  </div>
+                  <button @click="handleDocRequest(req)" class="btn-primary text-xs py-1.5 px-3 flex-shrink-0" style="font-size:11px">
+                    <i class="fa-solid fa-paper-plane text-xs"></i> Dispatch
+                  </button>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- Right column -->
+          <div class="flex flex-col gap-4">
+            <!-- Quick Actions -->
+            <div class="card p-5">
+              <h3 class="font-bold text-slate-800 mb-4" style="font-family:'Lexend',sans-serif;font-size:14px">Quick Actions</h3>
+              <div class="flex flex-col gap-2">
+                <button @click="currentView='wizard'; wizardStep=1" class="btn-primary w-full justify-center text-sm py-2.5">
+                  <i class="fa-solid fa-wand-magic-sparkles text-xs"></i> Run May Payroll
+                </button>
+                <button @click="openAddEmployee()" class="btn-secondary w-full justify-center text-sm py-2.5">
+                  <i class="fa-solid fa-user-plus text-xs"></i> Add New Staff
+                </button>
+                <button @click="showToastMsg('info','GRA PAYE Export','Generating monthly return file...')" class="btn-secondary w-full justify-center text-sm py-2.5">
+                  <i class="fa-solid fa-file-export text-xs"></i> GRA PAYE Export
+                </button>
+                <button @click="showToastMsg('success','SSNIT Report','SSNIT Contribution Report ready for download.')" class="btn-secondary w-full justify-center text-sm py-2.5">
+                  <i class="fa-solid fa-shield-halved text-xs"></i> SSNIT Report
+                </button>
+              </div>
+            </div>
+            <!-- Staff Breakdown -->
+            <div class="card p-5">
+              <h3 class="font-bold text-slate-800 mb-4" style="font-family:'Lexend',sans-serif;font-size:14px">Staff Breakdown</h3>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-user-doctor text-xs" style="color:#0284C7;width:14px"></i>
+                    <span class="text-sm text-slate-600">Doctors</span>
+                  </div>
+                  <span class="font-bold text-slate-800 text-sm" x-text="employees.filter(e=>e.role.toLowerCase().includes('doctor')||e.role.toLowerCase().includes('consultant')||e.role.toLowerCase().includes('practitioner')).length"></span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-user-nurse text-xs" style="color:#16A34A;width:14px"></i>
+                    <span class="text-sm text-slate-600">Nurses</span>
+                  </div>
+                  <span class="font-bold text-slate-800 text-sm" x-text="employees.filter(e=>e.role.toLowerCase().includes('nurse')).length"></span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-users text-xs" style="color:#D97706;width:14px"></i>
+                    <span class="text-sm text-slate-600">Support Staff</span>
+                  </div>
+                  <span class="font-bold text-slate-800 text-sm" x-text="employees.filter(e=>e.role.toLowerCase().includes('assistant')||e.role.toLowerCase().includes('ward')).length"></span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-briefcase text-xs" style="color:#7c3aed;width:14px"></i>
+                    <span class="text-sm text-slate-600">Admin</span>
+                  </div>
+                  <span class="font-bold text-slate-800 text-sm" x-text="employees.filter(e=>e.dept==='Administration').length"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ VIEW: PAYROLL WIZARD ══ -->
+      <div x-show="currentView==='wizard'" class="anim-fadeIn">
+        <!-- Step Tracker -->
+        <div class="card p-5 mb-6">
+          <div class="flex items-center gap-0">
+            <!-- Step 1 -->
+            <div class="flex flex-col items-center gap-1 flex-shrink-0">
+              <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm"
+                   :style="wizardStep > 1 ? 'background:#16A34A;color:#fff' : wizardStep===1 ? 'background:#fff;border:2px solid #166534;color:#166534' : 'background:#f1f5f9;color:#94a3b8'">
+                <i x-show="wizardStep > 1" class="fa-solid fa-check text-xs"></i>
+                <span x-show="wizardStep <= 1">1</span>
+              </div>
+              <span class="text-xs font-semibold step-label" :style="wizardStep===1 ? 'color:#166534' : wizardStep > 1 ? 'color:#16A34A' : 'color:#94a3b8'">Attendance</span>
+            </div>
+            <div class="step-line mx-3" :class="wizardStep > 1 ? 'done' : ''"></div>
+            <!-- Step 2 -->
+            <div class="flex flex-col items-center gap-1 flex-shrink-0">
+              <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm"
+                   :style="wizardStep > 2 ? 'background:#16A34A;color:#fff' : wizardStep===2 ? 'background:#fff;border:2px solid #166534;color:#166534' : 'background:#f1f5f9;color:#94a3b8'">
+                <i x-show="wizardStep > 2" class="fa-solid fa-check text-xs"></i>
+                <span x-show="wizardStep <= 2">2</span>
+              </div>
+              <span class="text-xs font-semibold step-label" :style="wizardStep===2 ? 'color:#166534' : wizardStep > 2 ? 'color:#16A34A' : 'color:#94a3b8'">Tax Review</span>
+            </div>
+            <div class="step-line mx-3" :class="wizardStep > 2 ? 'done' : ''"></div>
+            <!-- Step 3 -->
+            <div class="flex flex-col items-center gap-1 flex-shrink-0">
+              <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm"
+                   :style="wizardStep===3 ? 'background:#fff;border:2px solid #166534;color:#166534' : 'background:#f1f5f9;color:#94a3b8'">
+                3
+              </div>
+              <span class="text-xs font-semibold step-label" :style="wizardStep===3 ? 'color:#166534' : 'color:#94a3b8'">File Generation</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 1 -->
+        <div x-show="wizardStep===1">
+          <div class="card p-0 overflow-hidden">
+            <div class="px-6 py-4 flex items-center justify-between border-b border-slate-100">
+              <h3 class="font-bold text-slate-800" style="font-family:'Lexend',sans-serif">Attendance & Shift Review</h3>
+              <span class="badge" style="background:#dcfce7;color:#16A34A;border:1px solid #bbf7d0">
+                <i class="fa-solid fa-fingerprint mr-1 text-xs"></i> Biometric sync: 6/8 verified
+              </span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full data-table min-w-table">
+                <thead>
+                  <tr class="text-xs font-semibold uppercase tracking-wide" style="color:#64748b">
+                    <th class="px-5 py-3 text-left">Employee</th>
+                    <th class="px-4 py-3 text-left">Dept</th>
+                    <th class="px-4 py-3 text-left">Type</th>
+                    <th class="px-4 py-3 text-right">Hours</th>
+                    <th class="px-4 py-3 text-right">Night Shift</th>
+                    <th class="px-4 py-3 text-right">Risk Allow.</th>
+                    <th class="px-4 py-3 text-right">Gross Pay</th>
+                    <th class="px-4 py-3 text-left">Biometric</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="emp in employees" :key="emp.id">
+                    <tr>
+                      <td class="px-5 py-3">
+                        <div class="flex items-center gap-3">
+                          <div class="avatar" :style="'width:32px;height:32px;background:'+getAvatarColor(emp.name)+';font-size:11px'" x-text="getInitials(emp.name)"></div>
+                          <span class="text-sm font-medium text-slate-700" x-text="emp.name"></span>
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-sm text-slate-500" x-text="emp.dept.split(' ')[0]"></td>
+                      <td class="px-4 py-3">
+                        <span class="badge" :style="emp.type==='Locum' ? 'background:#fef9c3;color:#D97706;border:1px solid #fde68a' : 'background:#dcfce7;color:#16A34A;border:1px solid #bbf7d0'" x-text="emp.type"></span>
+                      </td>
+                      <td class="px-4 py-3 text-sm text-right text-slate-600 font-medium" x-text="emp.hoursWorked + 'h'"></td>
+                      <td class="px-4 py-3 text-sm text-right" :style="emp.nightShiftAllowance > 0 ? 'color:#475569' : 'color:#cbd5e1'" x-text="emp.nightShiftAllowance > 0 ? 'GHS ' + formatNum(emp.nightShiftAllowance) : '—'"></td>
+                      <td class="px-4 py-3 text-sm text-right" :style="emp.riskAllowance > 0 ? 'color:#475569' : 'color:#cbd5e1'" x-text="emp.riskAllowance > 0 ? 'GHS ' + formatNum(emp.riskAllowance) : '—'"></td>
+                      <td class="px-4 py-3 text-sm text-right font-semibold" style="color:#166534" x-text="'GHS ' + formatNum(calcEmployee(emp).grossPay)"></td>
+                      <td class="px-4 py-3">
+                        <span class="badge"
+                          :style="emp.biometric==='Verified' ? 'background:#dcfce7;color:#16A34A;border:1px solid #bbf7d0' : emp.biometric==='Manual Log' ? 'background:#fef9c3;color:#D97706;border:1px solid #fde68a' : emp.biometric==='Pending' ? 'background:#fef9c3;color:#D97706;border:1px solid #fde68a' : 'background:#f1f5f9;color:#94a3b8'"
+                          x-text="emp.biometric"></span>
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+                <tfoot>
+                  <tr style="background:#f0fdf4;">
+                    <td colspan="6" class="px-5 py-3 text-sm font-bold" style="color:#166534;font-family:'Lexend',sans-serif">Total Gross Payroll</td>
+                    <td class="px-4 py-3 text-right font-bold" style="color:#166534;font-family:'Lexend',sans-serif" x-text="'GHS ' + formatNum(employees.reduce((s,e)=>s+calcEmployee(e).grossPay,0))"></td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+          <div class="flex justify-end mt-4">
+            <button @click="wizardStep=2" class="btn-primary">
+              Confirm & Proceed to Tax Review <i class="fa-solid fa-arrow-right text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div x-show="wizardStep===2">
+          <div class="card p-0 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100">
+              <h3 class="font-bold text-slate-800" style="font-family:'Lexend',sans-serif">Tax & Pension Review</h3>
+              <p class="text-xs text-slate-400 mt-1">Check reliefs to update PAYE and net pay instantly. GRA bands applied per employee.</p>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full data-table" style="min-width:1050px;">
+                <thead>
+                  <tr class="text-xs font-semibold uppercase tracking-wide" style="color:#64748b">
+                    <th class="px-5 py-3 text-left">Employee</th>
+                    <th class="px-4 py-3 text-right">Gross Pay</th>
+                    <th class="px-4 py-3 text-right">SSNIT 5.5%</th>
+                    <th class="px-4 py-3 text-right">Chargeable</th>
+                    <th class="px-4 py-3 text-center">Tax Reliefs</th>
+                    <th class="px-4 py-3 text-right">PAYE Tax</th>
+                    <th class="px-4 py-3 text-right">Net Pay</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template x-for="emp in employees" :key="emp.id">
+                    <tr>
+                      <td class="px-5 py-3">
+                        <div class="flex items-center gap-2">
+                          <div class="avatar" :style="'width:28px;height:28px;background:'+getAvatarColor(emp.name)+';font-size:10px'" x-text="getInitials(emp.name)"></div>
+                          <span class="text-sm font-medium text-slate-700 truncate" style="max-width:150px" x-text="emp.name"></span>
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-sm text-right text-slate-600 font-medium" x-text="'GHS ' + formatNum(calcEmployee(emp).grossPay)"></td>
+                      <td class="px-4 py-3 text-sm text-right font-medium" style="color:#DC2626" x-text="'— GHS ' + formatNum(calcEmployee(emp).employeeSsnit)"></td>
+                      <td class="px-4 py-3 text-sm text-right text-slate-500" x-text="'GHS ' + formatNum(calcEmployee(emp, taxReliefs[emp.id]||0).chargeableIncome)"></td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center gap-3 justify-center">
+                          <label class="flex items-center gap-1.5 cursor-pointer">
+                            <input type="checkbox" class="rounded" style="accent-color:#16A34A"
+                              :checked="(reliefFlags[emp.id] && reliefFlags[emp.id].marriage) || false"
+                              @change="toggleRelief(emp.id, 'marriage', $event)">
+                            <span class="text-xs text-slate-600">Marriage</span>
+                          </label>
+                          <label class="flex items-center gap-1.5 cursor-pointer">
+                            <input type="checkbox" class="rounded" style="accent-color:#16A34A"
+                              :checked="(reliefFlags[emp.id] && reliefFlags[emp.id].childEdu) || false"
+                              @change="toggleRelief(emp.id, 'childEdu', $event)">
+                            <span class="text-xs text-slate-600">Child Edu</span>
+                          </label>
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-sm text-right font-semibold" style="color:#DC2626" x-text="'— GHS ' + formatNum(calcEmployee(emp, taxReliefs[emp.id]||0).paye)"></td>
+                      <td class="px-4 py-3 text-sm text-right font-bold" style="color:#166534;font-family:'Lexend',sans-serif" x-text="'GHS ' + formatNum(calcEmployee(emp, taxReliefs[emp.id]||0).netPay)"></td>
+                    </tr>
+                  </template>
+                </tbody>
+                <tfoot>
+                  <tr style="background:#f0fdf4;">
+                    <td colspan="5" class="px-5 py-3 text-sm font-bold" style="color:#166534;font-family:'Lexend',sans-serif">Totals</td>
+                    <td class="px-4 py-3 text-right text-sm font-bold" style="color:#DC2626" x-text="'— GHS ' + formatNum(employees.reduce((s,e)=>s+calcEmployee(e,taxReliefs[e.id]||0).paye,0))"></td>
+                    <td class="px-4 py-3 text-right font-bold" style="color:#166534;font-family:'Lexend',sans-serif" x-text="'GHS ' + formatNum(employees.reduce((s,e)=>s+calcEmployee(e,taxReliefs[e.id]||0).netPay,0))"></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+          <div class="flex justify-between mt-4">
+            <button @click="wizardStep=1" class="btn-secondary"><i class="fa-solid fa-arrow-left text-xs"></i> Back</button>
+            <button @click="lockAndGenerate()" class="btn-primary">Lock Calculations & Generate Files <i class="fa-solid fa-lock text-xs"></i></button>
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div x-show="wizardStep===3">
+          <!-- Success Banner -->
+          <div class="rounded-2xl p-5 mb-5 flex items-center justify-between" style="background:linear-gradient(135deg,#166534,#16A34A)">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                <i class="fa-solid fa-circle-check text-white"></i>
+              </div>
+              <div>
+                <p class="text-white font-bold" style="font-family:'Lexend',sans-serif">Payroll Locked & Verified ✓</p>
+                <p class="text-green-200 text-sm">May 2026 · All calculations confirmed</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-green-200 text-xs">Total Net Payroll</p>
+              <p class="text-white text-xl font-bold" style="font-family:'Lexend',sans-serif" x-text="'GHS ' + formatNum(employees.reduce((s,e)=>s+calcEmployee(e,taxReliefs[e.id]||0).netPay,0))"></p>
+            </div>
+          </div>
+
+          <!-- Download Cards -->
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <!-- Bank CSV -->
+            <div class="card p-5" style="border-top:3px solid #0284C7">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:#e0f2fe">
+                  <i class="fa-solid fa-building-columns" style="color:#0284C7"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-slate-800 text-sm" style="font-family:'Lexend',sans-serif">Bank Bulk Export</h4>
+                  <p class="text-xs text-slate-400">For bank bulk payment portal</p>
+                </div>
+              </div>
+              <ul class="space-y-1 mb-4">
+                <li class="text-xs text-slate-500 flex items-center gap-2"><i class="fa-solid fa-circle-check text-xs" style="color:#16A34A"></i> <span x-text="employees.filter(e=>e.bankAccount).length + ' bank accounts found'"></span></li>
+                <li class="text-xs flex items-center gap-2" style="color:#DC2626"><i class="fa-solid fa-triangle-exclamation text-xs"></i> 1 missing: Akosua Tetteh</li>
+                <li class="text-xs text-slate-500 flex items-center gap-2"><i class="fa-solid fa-circle-check text-xs" style="color:#16A34A"></i> No negative pay values</li>
+              </ul>
+              <button @click="downloadBankCSV()" class="btn-blue w-full justify-center text-sm py-2.5">
+                <i class="fa-solid fa-download text-xs"></i> Download Bank Bulk Export (.csv)
+              </button>
+            </div>
+            <!-- MoMo CSV -->
+            <div class="card p-5" style="border-top:3px solid #D97706">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:#fef9c3">
+                  <i class="fa-solid fa-mobile-screen" style="color:#D97706"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-slate-800 text-sm" style="font-family:'Lexend',sans-serif">MoMo Bulk Schedule</h4>
+                  <p class="text-xs text-slate-400">MTN / Telecel / AT Money</p>
+                </div>
+              </div>
+              <ul class="space-y-1 mb-4">
+                <li class="text-xs text-slate-500 flex items-center gap-2"><i class="fa-solid fa-circle-check text-xs" style="color:#16A34A"></i> <span x-text="employees.filter(e=>e.momoNumber).length + ' MoMo numbers found'"></span></li>
+                <li class="text-xs text-slate-500 flex items-center gap-2"><i class="fa-solid fa-circle-check text-xs" style="color:#16A34A"></i> All numbers valid</li>
+                <li class="text-xs text-slate-500 flex items-center gap-2"><i class="fa-solid fa-circle-check text-xs" style="color:#16A34A"></i> MTN network confirmed</li>
+              </ul>
+              <button @click="downloadMoMoCSV()" class="btn-amber w-full justify-center text-sm py-2.5">
+                <i class="fa-solid fa-download text-xs"></i> Download MoMo Schedule (.csv)
+              </button>
+            </div>
+          </div>
+
+          <!-- Statutory Exports -->
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="card p-4 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#fef9c3">
+                  <i class="fa-solid fa-file-invoice" style="color:#D97706;font-size:14px"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-700">GRA PAYE Monthly Return</p>
+                  <p class="text-xs text-slate-400">May 2026 · GRA compliant</p>
+                </div>
+              </div>
+              <button @click="showToastMsg('success','GRA PAYE Return','May 2026 PAYE Return generated and ready.'); addAuditLog('GRA PAYE Return for May 2026 exported by HR_Admin','compliance')" class="btn-secondary text-xs py-1.5 px-3">
+                <i class="fa-solid fa-download text-xs"></i> Export
+              </button>
+            </div>
+            <div class="card p-4 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#e0f2fe">
+                  <i class="fa-solid fa-shield-halved" style="color:#0284C7;font-size:14px"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-700">SSNIT Contribution Report</p>
+                  <p class="text-xs text-slate-400">May 2026 · Tier 1 & 2</p>
+                </div>
+              </div>
+              <button @click="showToastMsg('success','SSNIT Report','May 2026 SSNIT Contribution Report generated.'); addAuditLog('SSNIT contribution report exported for May 2026 by HR_Admin','export')" class="btn-secondary text-xs py-1.5 px-3">
+                <i class="fa-solid fa-download text-xs"></i> Export
+              </button>
+            </div>
+          </div>
+
+          <div class="flex justify-between">
+            <button @click="wizardStep=2" class="btn-secondary"><i class="fa-solid fa-arrow-left text-xs"></i> Back</button>
+            <button @click="currentView='staff'" class="btn-primary">Proceed to Dispatch Payslips <i class="fa-solid fa-arrow-right text-xs"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ VIEW: STAFF DIRECTORY ══ -->
+      <div x-show="currentView==='staff'" class="anim-fadeIn">
+        <!-- Toolbar -->
+        <div class="flex items-center gap-3 mb-5 flex-wrap">
+          <div class="relative flex-1" style="min-width:200px;max-width:320px">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+            <input x-model="searchQuery" type="text" placeholder="Search staff..." class="fmcp-input pl-10 text-sm py-2.5">
+          </div>
+          <select x-model="filterDept" class="fmcp-select text-sm py-2.5" style="width:auto;min-width:170px">
+            <option value="">All Departments</option>
+            <option>Internal Medicine</option><option>Outpatient</option><option>Maternity Ward</option>
+            <option>Surgical Ward</option><option>General Ward</option><option>Administration</option>
+            <option>Emergency</option><option>ICU</option><option>Pharmacy</option><option>Laboratory</option>
+          </select>
+          <button @click="openAddEmployee()" class="btn-primary text-sm py-2.5">
+            <i class="fa-solid fa-user-plus text-xs"></i> Add Staff
+          </button>
+          <button @click="showToastMsg('info','Bulk Export','Generating payslips for all staff...')" class="flex items-center gap-2 text-sm py-2.5 px-4 rounded-xl font-medium" style="background:#1e293b;color:#fff;border:none;cursor:pointer">
+            <i class="fa-solid fa-file-export text-xs"></i> Bulk Export Payslips
+          </button>
+        </div>
+
+        <!-- Staff Grid -->
+        <div x-show="filteredEmployees.length > 0" class="grid grid-cols-2 gap-4">
+          <template x-for="emp in filteredEmployees" :key="emp.id">
+            <div class="staff-card" @click.self="openEmployeeProfile(emp)">
+              <div class="p-5" @click="openEmployeeProfile(emp)">
+                <div class="flex items-start gap-4">
+                  <div class="avatar flex-shrink-0" :style="'width:48px;height:48px;background:'+getAvatarColor(emp.name)+';font-size:16px'" x-text="getInitials(emp.name)"></div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-bold text-slate-800 truncate" style="font-family:'Lexend',sans-serif;font-size:15px" x-text="emp.name"></p>
+                    <p class="text-sm text-slate-400 truncate" x-text="emp.role"></p>
+                  </div>
+                  <span class="badge flex-shrink-0" :style="emp.type==='Locum' ? 'background:#fef9c3;color:#D97706;border:1px solid #fde68a' : 'background:#dcfce7;color:#16A34A;border:1px solid #bbf7d0'" x-text="emp.type"></span>
+                </div>
+                <div class="mt-3 flex items-center gap-2 flex-wrap">
+                  <span class="flex items-center gap-1 text-xs text-slate-500">
+                    <i class="fa-solid fa-hospital text-xs" style="color:#94a3b8"></i>
+                    <span x-text="emp.dept"></span>
+                  </span>
+                  <span class="ml-auto badge"
+                    :style="emp.bankAccount ? 'background:#e0f2fe;color:#0284C7;border:1px solid #bae6fd' : emp.momoNumber ? 'background:#fef9c3;color:#D97706;border:1px solid #fde68a' : 'background:#fee2e2;color:#DC2626;border:1px solid #fca5a5'"
+                    x-text="emp.bankAccount ? emp.bankName || 'Bank' : emp.momoNumber ? 'MoMo' : 'Missing Details'"></span>
+                  <span class="badge"
+                    :style="emp.biometric==='Verified' ? 'background:#dcfce7;color:#16A34A;border:1px solid #bbf7d0' : emp.biometric==='N/A' ? 'background:#f1f5f9;color:#94a3b8' : 'background:#fef9c3;color:#D97706;border:1px solid #fde68a'"
+                    x-text="emp.biometric"></span>
+                </div>
+              </div>
+              <div class="px-5 py-3 border-t border-slate-100 flex items-center justify-between" style="background:#fafbfc">
+                <div>
+                  <p class="text-xs text-slate-400">Net Pay (May)</p>
+                  <p class="font-bold text-sm" style="color:#166534;font-family:'Lexend',sans-serif" x-text="'GHS ' + formatNum(calcEmployee(emp, taxReliefs[emp.id]||0).netPay)"></p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button @click.stop="openEditEmployee(emp)" class="btn-secondary text-xs py-1.5 px-3">
+                    <i class="fa-solid fa-pen text-xs"></i> Edit
+                  </button>
+                  <button @click.stop="confirmDeleteEmployee(emp)" class="text-xs py-1.5 px-3 rounded-xl font-medium" style="background:#fee2e2;color:#DC2626;border:none;cursor:pointer">
+                    <i class="fa-solid fa-trash text-xs"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="filteredEmployees.length === 0" class="flex flex-col items-center justify-center py-20">
+          <i class="fa-solid fa-users-slash text-4xl mb-3" style="color:#cbd5e1"></i>
+          <p class="font-semibold text-slate-500 mb-1" style="font-family:'Lexend',sans-serif">No staff found</p>
+          <p class="text-sm text-slate-400 mb-4">Try adjusting your search or filters</p>
+          <button @click="searchQuery=''; filterDept=''" class="text-sm font-medium" style="color:#16A34A;background:none;border:none;cursor:pointer">Clear filters</button>
+        </div>
+      </div>
+
+      <!-- ══ VIEW: COMPLIANCE ══ -->
+      <div x-show="currentView==='compliance'" class="anim-fadeIn">
+        <div class="grid grid-cols-2 gap-4 mb-5">
+          <!-- GRA Tax Bands -->
+          <div class="card p-5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-slate-800" style="font-family:'Lexend',sans-serif">GRA Tax Bands</h3>
+              <span class="badge" style="background:#dcfce7;color:#16A34A;border:1px solid #bbf7d0">
+                <i class="fa-solid fa-lock text-xs mr-1"></i> Locked
+              </span>
+            </div>
+            <div class="space-y-3">
+              <template x-for="band in graBands" :key="band.label">
+                <div class="flex items-center gap-3">
+                  <div class="w-16 flex-shrink-0">
+                    <span class="badge" :style="band.rate===0 ? 'background:#f1f5f9;color:#64748b' : band.rate <= 0.1 ? 'background:#dcfce7;color:#16A34A;border:1px solid #bbf7d0' : band.rate <= 0.175 ? 'background:#fef9c3;color:#D97706;border:1px solid #fde68a' : 'background:#fee2e2;color:#DC2626;border:1px solid #fca5a5'" x-text="Math.round(band.rate*100)+'%'"></span>
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex justify-between mb-1">
+                      <span class="text-xs text-slate-500" x-text="band.label"></span>
+                    </div>
+                    <div class="h-1.5 rounded-full bg-slate-100">
+                      <div class="h-1.5 rounded-full" :style="'width:' + Math.min(100,(band.rate/0.35)*100) + '%;background:' + (band.rate===0?'#e2e8f0':band.rate<=0.1?'#16A34A':band.rate<=0.175?'#D97706':'#DC2626')"></div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- SSNIT -->
+          <div class="card p-5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-slate-800" style="font-family:'Lexend',sans-serif">SSNIT 3-Tier Pension</h3>
+              <span class="badge" style="background:#e0f2fe;color:#0284C7;border:1px solid #bae6fd">
+                <i class="fa-solid fa-lock text-xs mr-1"></i> Locked
+              </span>
+            </div>
+            <div class="space-y-3 mb-4">
+              <div class="p-3 rounded-xl border border-slate-100" style="background:#fafbfc">
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Employee Contribution</p>
+                <p class="text-lg font-bold" style="color:#DC2626;font-family:'Lexend',sans-serif">5.5% <span class="text-sm font-normal text-slate-400">of Basic Salary</span></p>
+                <p class="text-xs text-slate-400">Deducted before PAYE calculation</p>
+              </div>
+              <div class="p-3 rounded-xl border border-slate-100" style="background:#fafbfc">
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Employer → SSNIT Tier 1</p>
+                <p class="text-lg font-bold" style="color:#0284C7;font-family:'Lexend',sans-serif">8.0% <span class="text-sm font-normal text-slate-400">of Basic Salary</span></p>
+                <p class="text-xs text-slate-400">Remitted directly to SSNIT</p>
+              </div>
+              <div class="p-3 rounded-xl border border-slate-100" style="background:#fafbfc">
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Employer → Tier 2 Fund</p>
+                <p class="text-lg font-bold" style="color:#D97706;font-family:'Lexend',sans-serif">5.0% <span class="text-sm font-normal text-slate-400">of Basic Salary</span></p>
+                <p class="text-xs text-slate-400">Remitted to private occupational scheme</p>
+              </div>
+            </div>
+            <div class="p-3 rounded-xl" style="background:#dcfce7;border:1px solid #bbf7d0">
+              <p class="text-xs font-semibold" style="color:#166534">Total Employer Contribution = <span style="font-family:'Lexend',sans-serif;font-size:16px">13%</span> of Basic Salary</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit Log -->
+        <div class="card p-0 overflow-hidden">
+          <div class="px-6 py-4 flex items-center justify-between border-b border-slate-100">
+            <h3 class="font-bold text-slate-800" style="font-family:'Lexend',sans-serif">Immutable Audit Log</h3>
+            <span class="badge" style="background:#e0f2fe;color:#0284C7;border:1px solid #bae6fd;font-size:9px">
+              <i class="fa-solid fa-lock text-xs mr-1"></i> AES-256 Encrypted
+            </span>
+          </div>
+          <div class="scrollable" style="max-height:288px">
+            <template x-for="(log, idx) in auditLogs" :key="idx">
+              <div class="flex items-start gap-4 px-6 py-3 border-b border-slate-50">
+                <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+                     :style="log.type==='print' ? 'background:#e0f2fe' : log.type==='payroll' ? 'background:#dcfce7' : log.type==='whatsapp' ? 'background:#dcfce7' : log.type==='staff' ? 'background:#fef9c3' : log.type==='salary' ? 'background:#faf0fe' : log.type==='export' ? 'background:#e0f2fe' : log.type==='bulk' ? 'background:#dcfce7' : log.type==='compliance' ? 'background:#fef9c3' : 'background:#f1f5f9'">
+                  <i class="text-xs"
+                     :class="log.type==='print' ? 'fa-solid fa-print' : log.type==='payroll' ? 'fa-solid fa-calculator' : log.type==='whatsapp' ? 'fa-brands fa-whatsapp' : log.type==='staff' ? 'fa-solid fa-user-plus' : log.type==='salary' ? 'fa-solid fa-money-bill-wave' : log.type==='export' ? 'fa-solid fa-file-export' : log.type==='bulk' ? 'fa-solid fa-paper-plane' : log.type==='compliance' ? 'fa-solid fa-shield-halved' : 'fa-solid fa-circle-info'"
+                     :style="log.type==='print' ? 'color:#0284C7' : log.type==='payroll' ? 'color:#16A34A' : log.type==='whatsapp' ? 'color:#16A34A' : log.type==='staff' ? 'color:#D97706' : log.type==='salary' ? 'color:#7c3aed' : log.type==='export' ? 'color:#0284C7' : log.type==='bulk' ? 'color:#16A34A' : log.type==='compliance' ? 'color:#D97706' : 'color:#64748b'"></i>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm text-slate-700" x-text="log.action"></p>
+                  <p class="text-xs text-slate-400 mt-0.5" x-text="log.timestamp"></p>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- ADD / EDIT EMPLOYEE MODAL -->
+<!-- ══════════════════════════════════════════════════ -->
+<div x-show="showAddEmployee" x-cloak class="fixed inset-0 flex items-center justify-center" style="background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:50;">
+  <div class="bg-white rounded-2xl shadow-2xl w-full overflow-hidden anim-modalIn" style="max-width:520px;max-height:90vh;display:flex;flex-direction:column;">
+    <!-- Header -->
+    <div class="p-6 flex-shrink-0" style="background:linear-gradient(135deg,#0C1D10,#166534)">
+      <div class="flex items-start justify-between">
+        <div>
+          <h3 class="font-bold text-white text-lg" style="font-family:'Lexend',sans-serif" x-text="isEditMode ? 'Edit Staff Member' : 'Add New Staff Member'"></h3>
+          <p class="text-green-300 text-sm mt-1" x-text="addStep===1 ? 'Step 1: Personal & Role' : addStep===2 ? 'Step 2: Salary & Allowances' : 'Step 3: Payment Details'"></p>
+        </div>
+        <button @click="showAddEmployee=false" class="text-white/50 hover:text-white text-xl" style="background:none;border:none;cursor:pointer;line-height:1"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <!-- Step dots -->
+      <div class="flex items-center gap-2 mt-4">
+        <div class="h-1.5 rounded-full flex-1" :style="addStep>=1 ? 'background:#4ADE80' : 'background:rgba(255,255,255,0.2)'"></div>
+        <div class="h-1.5 rounded-full flex-1" :style="addStep>=2 ? 'background:#4ADE80' : 'background:rgba(255,255,255,0.2)'"></div>
+        <div class="h-1.5 rounded-full flex-1" :style="addStep>=3 ? 'background:#4ADE80' : 'background:rgba(255,255,255,0.2)'"></div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="flex-1 overflow-y-auto p-6">
+      <!-- Step 1 -->
+      <div x-show="addStep===1" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Full Name <span style="color:#DC2626">*</span></label>
+          <input x-model="newEmp.name" type="text" placeholder="e.g. Dr. Kwame Mensah" class="fmcp-input" :class="addErrors.name ? 'error' : ''">
+          <p x-show="addErrors.name" class="text-xs mt-1" style="color:#DC2626" x-text="addErrors.name"></p>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Job Title <span style="color:#DC2626">*</span></label>
+            <input x-model="newEmp.role" type="text" placeholder="e.g. Senior Nurse" class="fmcp-input" :class="addErrors.role ? 'error' : ''">
+            <p x-show="addErrors.role" class="text-xs mt-1" style="color:#DC2626" x-text="addErrors.role"></p>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Employment Type</label>
+            <select x-model="newEmp.type" class="fmcp-select">
+              <option>Full-time</option><option>Part-time</option><option>Locum</option><option>Contract</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Department <span style="color:#DC2626">*</span></label>
+          <select x-model="newEmp.dept" class="fmcp-select" :class="addErrors.dept ? 'error' : ''">
+            <option value="">Select department...</option>
+            <option>Internal Medicine</option><option>Outpatient</option><option>Maternity Ward</option>
+            <option>Surgical Ward</option><option>General Ward</option><option>Administration</option>
+            <option>Emergency</option><option>ICU</option><option>Pharmacy</option><option>Laboratory</option><option>Radiology</option>
+          </select>
+          <p x-show="addErrors.dept" class="text-xs mt-1" style="color:#DC2626" x-text="addErrors.dept"></p>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Phone Number</label>
+            <input x-model="newEmp.phone" type="text" placeholder="024XXXXXXX" class="fmcp-input">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Hospital Email</label>
+            <input x-model="newEmp.email" type="email" placeholder="name@franklyn.gh" class="fmcp-input">
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div x-show="addStep===2" class="space-y-4">
+        <div class="p-3 rounded-xl" style="background:#fef9c3;border:1px solid #fde68a">
+          <p class="text-xs font-medium" style="color:#92400e"><i class="fa-solid fa-circle-info mr-1"></i> Enter monthly basic salary. SSNIT (5.5%) and PAYE are calculated automatically.</p>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Basic Monthly Salary (GHS) <span style="color:#DC2626">*</span></label>
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-semibold" style="color:#64748b">GHS</span>
+            <input x-model.number="newEmp.basicSalary" @input="computePreview()" type="number" min="100" placeholder="0.00" class="fmcp-input pl-14" :class="addErrors.basicSalary ? 'error' : ''">
+          </div>
+          <p x-show="addErrors.basicSalary" class="text-xs mt-1" style="color:#DC2626" x-text="addErrors.basicSalary"></p>
+        </div>
+
+        <!-- Live Tax Preview -->
+        <div x-show="newEmp.basicSalary > 0" class="rounded-xl p-4" style="background:#f0fdf4;border:1px solid #bbf7d0">
+          <p class="text-xs font-bold uppercase tracking-wide mb-3" style="color:#166534;font-family:'Lexend',sans-serif">Live Tax Preview</p>
+          <div class="grid grid-cols-2 gap-y-2 gap-x-4 text-sm">
+            <div class="flex justify-between"><span class="text-slate-500">Gross Pay</span><span class="font-medium text-slate-700" x-text="'GHS ' + formatNum(previewCalc.grossPay || 0)"></span></div>
+            <div class="flex justify-between"><span class="text-slate-500">SSNIT (5.5%)</span><span class="font-medium" style="color:#DC2626" x-text="'— GHS ' + formatNum(previewCalc.employeeSsnit || 0)"></span></div>
+            <div class="flex justify-between"><span class="text-slate-500">PAYE Tax</span><span class="font-medium" style="color:#DC2626" x-text="'— GHS ' + formatNum(previewCalc.paye || 0)"></span></div>
+            <div class="flex justify-between col-span-2 pt-1 border-t border-green-200">
+              <span class="font-bold" style="color:#166534;font-family:'Lexend',sans-serif">Estimated Net Pay</span>
+              <span class="font-bold text-lg" style="color:#166534;font-family:'Lexend',sans-serif" x-text="'GHS ' + formatNum(previewCalc.netPay || 0)"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Night Shift Allowance (GHS)</label>
+            <input x-model.number="newEmp.nightShiftAllowance" @input="computePreview()" type="number" min="0" placeholder="0" class="fmcp-input">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Risk Allowance (GHS)</label>
+            <input x-model.number="newEmp.riskAllowance" @input="computePreview()" type="number" min="0" placeholder="0" class="fmcp-input">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Monthly Hours Worked</label>
+          <input x-model.number="newEmp.hoursWorked" type="number" min="1" placeholder="160" class="fmcp-input">
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div x-show="addStep===3" class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div @click="newEmp.paymentMethod='bank'" class="p-4 rounded-xl cursor-pointer border-2 transition-all"
+               :style="newEmp.paymentMethod==='bank' ? 'border-color:#0284C7;background:#e0f2fe' : 'border-color:#e2e8f0;background:#fafbfc'">
+            <i class="fa-solid fa-building-columns mb-2" :style="newEmp.paymentMethod==='bank' ? 'color:#0284C7' : 'color:#94a3b8'"></i>
+            <p class="font-semibold text-sm" :style="newEmp.paymentMethod==='bank' ? 'color:#0284C7' : 'color:#475569'">Bank Account</p>
+          </div>
+          <div @click="newEmp.paymentMethod='momo'" class="p-4 rounded-xl cursor-pointer border-2 transition-all"
+               :style="newEmp.paymentMethod==='momo' ? 'border-color:#D97706;background:#fef9c3' : 'border-color:#e2e8f0;background:#fafbfc'">
+            <i class="fa-solid fa-mobile-screen mb-2" :style="newEmp.paymentMethod==='momo' ? 'color:#D97706' : 'color:#94a3b8'"></i>
+            <p class="font-semibold text-sm" :style="newEmp.paymentMethod==='momo' ? 'color:#D97706' : 'color:#475569'">Mobile Money</p>
+          </div>
+        </div>
+
+        <div x-show="newEmp.paymentMethod==='bank'" class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Bank Name</label>
+            <select x-model="newEmp.bankName" class="fmcp-select">
+              <option value="">Select bank...</option>
+              <option>Ecobank</option><option>Stanbic Bank</option><option>FirstBank Ghana</option>
+              <option>GCB Bank</option><option>Absa Ghana</option><option>Fidelity Bank</option>
+              <option>Zenith Bank</option><option>Standard Chartered</option><option>CAL Bank</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">Account Number</label>
+            <input x-model="newEmp.bankAccount" type="text" placeholder="Enter account number" class="fmcp-input">
+          </div>
+        </div>
+
+        <div x-show="newEmp.paymentMethod==='momo'" class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1.5 uppercase tracking-wide">MoMo Number</label>
+            <input x-model="newEmp.momoNumber" type="text" placeholder="024XXXXXXX" class="fmcp-input">
+            <p class="text-xs text-slate-400 mt-1">MTN: 024/054/055/059 · Telecel: 020/050 · AT Money: 027/057</p>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div x-show="newEmp.name" class="p-4 rounded-xl" style="background:#0C1D10">
+          <p class="text-xs font-bold uppercase tracking-wide mb-3" style="color:#4ADE80;font-family:'Lexend',sans-serif">Summary</p>
+          <div class="grid grid-cols-2 gap-y-1.5 text-sm">
+            <span style="color:rgba(255,255,255,0.5)">Name</span><span class="text-white font-medium" x-text="newEmp.name || '—'"></span>
+            <span style="color:rgba(255,255,255,0.5)">Role</span><span class="text-white font-medium" x-text="newEmp.role || '—'"></span>
+            <span style="color:rgba(255,255,255,0.5)">Department</span><span class="text-white font-medium" x-text="newEmp.dept || '—'"></span>
+            <span style="color:rgba(255,255,255,0.5)">Basic Salary</span><span class="font-bold" style="color:#4ADE80;font-family:'Lexend',sans-serif" x-text="newEmp.basicSalary ? 'GHS ' + formatNum(newEmp.basicSalary) : '—'"></span>
+            <span style="color:rgba(255,255,255,0.5)">Est. Net Pay</span><span class="font-bold" style="color:#4ADE80;font-family:'Lexend',sans-serif" x-text="previewCalc.netPay ? 'GHS ' + formatNum(previewCalc.netPay) : '—'"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-4 border-t border-slate-100 flex justify-between flex-shrink-0" style="background:#fafbfc">
+      <button x-show="addStep > 1" @click="addStep--" class="btn-secondary text-sm py-2"><i class="fa-solid fa-arrow-left text-xs"></i> Back</button>
+      <div x-show="addStep === 1" class="w-4"></div>
+      <div class="flex gap-2">
+        <button @click="showAddEmployee=false" class="btn-secondary text-sm py-2">Cancel</button>
+        <button x-show="addStep < 3" @click="validateAddStep()" class="btn-primary text-sm py-2">Next <i class="fa-solid fa-arrow-right text-xs"></i></button>
+        <button x-show="addStep === 3" @click="submitEmployee()" class="btn-primary text-sm py-2">
+          <i class="fa-solid fa-check text-xs"></i>
+          <span x-text="isEditMode ? 'Save Changes' : 'Add to Payroll'"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- EMPLOYEE PROFILE MODAL -->
+<!-- ══════════════════════════════════════════════════ -->
+<div x-show="showEmployeeModal && selectedEmployee" x-cloak class="fixed inset-0 flex items-center justify-center" style="background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:50;">
+  <div class="bg-white rounded-2xl shadow-2xl overflow-hidden anim-modalIn" style="width:100%;max-width:640px;max-height:90vh;display:flex;flex-direction:column;">
+    <template x-if="selectedEmployee">
+      <div style="display:contents">
+        <!-- Header -->
+        <div class="p-6 flex-shrink-0" style="background:linear-gradient(135deg,#0C1D10,#1e4d28)">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-4">
+              <div class="avatar" :style="'width:56px;height:56px;background:'+getAvatarColor(selectedEmployee.name)+';font-size:18px'" x-text="getInitials(selectedEmployee.name)"></div>
+              <div>
+                <h3 class="font-bold text-white text-xl" style="font-family:'Lexend',sans-serif" x-text="selectedEmployee.name"></h3>
+                <p class="text-green-300 text-sm" x-text="selectedEmployee.role + ' · ' + selectedEmployee.dept"></p>
+                <div class="flex items-center gap-2 mt-1">
+                  <span class="badge" :style="selectedEmployee.type==='Locum' ? 'background:rgba(217,119,6,0.2);color:#fde68a;border:1px solid rgba(253,230,138,0.3)' : 'background:rgba(22,163,74,0.2);color:#86efac;border:1px solid rgba(134,239,172,0.3)'" x-text="selectedEmployee.type"></span>
+                  <span class="badge" :style="selectedEmployee.biometric==='Verified' ? 'background:rgba(22,163,74,0.2);color:#86efac;border:1px solid rgba(134,239,172,0.3)' : 'background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.5)'" x-text="selectedEmployee.biometric"></span>
+                </div>
+              </div>
+            </div>
+            <button @click="showEmployeeModal=false" class="text-white/50 hover:text-white text-xl" style="background:none;border:none;cursor:pointer"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 space-y-5">
+          <!-- Pay Summary -->
+          <div class="grid grid-cols-3 gap-3">
+            <div class="p-4 rounded-xl" style="background:#f8fafc;border:1px solid #e2e8f0">
+              <p class="text-xs text-slate-400 mb-1">Basic Salary</p>
+              <p class="font-bold text-slate-700" style="font-family:'Lexend',sans-serif" x-text="'GHS ' + formatNum(selectedEmployee.basicSalary)"></p>
+            </div>
+            <div class="p-4 rounded-xl" style="background:#f0fdf4;border:1px solid #bbf7d0">
+              <p class="text-xs text-slate-400 mb-1">Net Pay (May)</p>
+              <p class="font-bold" style="color:#166534;font-family:'Lexend',sans-serif" x-text="'GHS ' + formatNum(calcEmployee(selectedEmployee, taxReliefs[selectedEmployee.id]||0).netPay)"></p>
+            </div>
+            <div class="p-4 rounded-xl" style="background:#fff5f5;border:1px solid #fca5a5">
+              <p class="text-xs text-slate-400 mb-1">Total Deductions</p>
+              <p class="font-bold" style="color:#DC2626;font-family:'Lexend',sans-serif" x-text="'GHS ' + formatNum(calcEmployee(selectedEmployee, taxReliefs[selectedEmployee.id]||0).totalDeductions)"></p>
+            </div>
+          </div>
+
+          <!-- Missing payment warning -->
+          <div x-show="!selectedEmployee.bankAccount && !selectedEmployee.momoNumber" class="p-3 rounded-xl" style="background:#fef9c3;border:1px solid #fde68a">
+            <p class="text-sm font-medium" style="color:#92400e"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Missing payment details — no bank account or MoMo number on file.</p>
+          </div>
+
+          <!-- Document Dispatch -->
+          <div>
+            <p class="text-xs font-bold uppercase tracking-wide text-slate-400 mb-3">Document Dispatch</p>
+            <div class="mb-3">
+              <select x-model="selectedDocType" class="fmcp-select text-sm">
+                <option value="payslip">GRA-Compliant Payslip — May 2026</option>
+                <option value="contract">Employment Contract</option>
+                <option value="ssnit">SSNIT Contribution Summary</option>
+                <option value="relief">Tax Relief Form</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-3 gap-3">
+              <button @click="dispatchPrint()" class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all cursor-pointer" style="background:none">
+                <i class="fa-solid fa-print text-lg text-slate-500"></i>
+                <span class="text-xs font-semibold text-slate-500">Print (A4)</span>
+              </button>
+              <button @click="dispatchWhatsApp(selectedEmployee)" class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-green-200 hover:border-green-400 hover:bg-green-50 transition-all cursor-pointer" style="background:none">
+                <i class="fa-brands fa-whatsapp text-lg" style="color:#16A34A"></i>
+                <span class="text-xs font-semibold" style="color:#16A34A">WhatsApp/SMS</span>
+              </button>
+              <button @click="dispatchEmail(selectedEmployee)" class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer" style="background:none">
+                <i class="fa-solid fa-envelope text-lg" style="color:#0284C7"></i>
+                <span class="text-xs font-semibold" style="color:#0284C7">Email Dispatch</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- PAYSLIP PRINT MODAL -->
+<!-- ══════════════════════════════════════════════════ -->
+<div x-show="showPayslipModal && selectedEmployee" x-cloak class="fixed inset-0 flex items-center justify-center" style="background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:55;">
+  <div class="bg-white rounded-2xl shadow-2xl overflow-hidden anim-modalIn" style="width:100%;max-width:576px;max-height:92vh;display:flex;flex-direction:column;" id="payslip-print-area">
+    <template x-if="selectedEmployee">
+      <div style="display:contents">
+        <!-- Header band -->
+        <div class="p-5 flex items-center justify-between flex-shrink-0" style="background:#166534">
+          <svg width="130" height="36" viewBox="0 0 130 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="0" width="130" height="36" rx="7" fill="#0C1D10"/>
+            <rect x="5" y="5" width="22" height="26" rx="5" fill="#DC2626"/>
+            <text x="16" y="21" text-anchor="middle" font-family="Lexend,sans-serif" font-weight="800" font-size="13" fill="#FFFFFF">H</text>
+            <text x="34" y="16" font-family="Lexend,sans-serif" font-weight="800" font-size="9" fill="#FFFFFF" letter-spacing="1">FRANKLYN</text>
+            <text x="34" y="27" font-family="Lexend,sans-serif" font-weight="400" font-size="6" fill="rgba(255,255,255,0.5)" letter-spacing="1.5">MEDICAL CENTRE</text>
+          </svg>
+          <div class="text-right">
+            <p class="text-white font-bold text-xs" style="font-family:'Lexend',sans-serif">PAYSLIP — MAY 2026</p>
+            <p class="text-green-300 text-xs">GRA Compliant Document</p>
+          </div>
+          <button @click="showPayslipModal=false" class="text-white/50 hover:text-white ml-4" style="background:none;border:none;cursor:pointer"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-5">
+          <!-- Employee Info -->
+          <div class="grid grid-cols-2 gap-3 mb-4 text-sm">
+            <div><span class="text-slate-400 text-xs">Name</span><p class="font-semibold text-slate-700" x-text="selectedEmployee.name"></p></div>
+            <div><span class="text-slate-400 text-xs">Department</span><p class="font-semibold text-slate-700" x-text="selectedEmployee.dept"></p></div>
+            <div><span class="text-slate-400 text-xs">Role</span><p class="font-semibold text-slate-700" x-text="selectedEmployee.role"></p></div>
+            <div><span class="text-slate-400 text-xs">Employment Type</span><p class="font-semibold text-slate-700" x-text="selectedEmployee.type"></p></div>
+          </div>
+
+          <!-- Pay breakdown -->
+          <div class="rounded-xl overflow-hidden border border-slate-200 mb-4">
+            <table class="w-full text-sm">
+              <thead>
+                <tr style="background:#f8fafc">
+                  <th class="px-4 py-2 text-left text-xs text-slate-400 font-semibold">Description</th>
+                  <th class="px-4 py-2 text-right text-xs text-slate-400 font-semibold">Amount (GHS)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-t border-slate-100">
+                  <td class="px-4 py-2 text-slate-600">Basic Salary</td>
+                  <td class="px-4 py-2 text-right text-slate-700 font-medium" x-text="formatNum(selectedEmployee.basicSalary)"></td>
+                </tr>
+                <tr x-show="selectedEmployee.nightShiftAllowance > 0" class="border-t border-slate-100">
+                  <td class="px-4 py-2 text-slate-600">Night Shift Allowance</td>
+                  <td class="px-4 py-2 text-right text-slate-700 font-medium" x-text="formatNum(selectedEmployee.nightShiftAllowance)"></td>
+                </tr>
+                <tr x-show="selectedEmployee.riskAllowance > 0" class="border-t border-slate-100">
+                  <td class="px-4 py-2 text-slate-600">Risk Allowance</td>
+                  <td class="px-4 py-2 text-right text-slate-700 font-medium" x-text="formatNum(selectedEmployee.riskAllowance)"></td>
+                </tr>
+                <tr class="border-t border-slate-200" style="background:#f0fdf4">
+                  <td class="px-4 py-2 font-bold" style="color:#166534;font-family:'Lexend',sans-serif">Gross Pay</td>
+                  <td class="px-4 py-2 text-right font-bold" style="color:#166534;font-family:'Lexend',sans-serif" x-text="formatNum(calcEmployee(selectedEmployee).grossPay)"></td>
+                </tr>
+                <tr class="border-t border-slate-100">
+                  <td class="px-4 py-2" style="color:#DC2626">Employee SSNIT (5.5%)</td>
+                  <td class="px-4 py-2 text-right font-medium" style="color:#DC2626" x-text="'— ' + formatNum(calcEmployee(selectedEmployee).employeeSsnit)"></td>
+                </tr>
+                <tr class="border-t border-slate-100">
+                  <td class="px-4 py-2 text-xs text-slate-400">Income Subject to Tax</td>
+                  <td class="px-4 py-2 text-right text-xs text-slate-400" x-text="formatNum(calcEmployee(selectedEmployee, taxReliefs[selectedEmployee.id]||0).chargeableIncome)"></td>
+                </tr>
+                <tr class="border-t border-slate-100">
+                  <td class="px-4 py-2" style="color:#DC2626">PAYE Tax</td>
+                  <td class="px-4 py-2 text-right font-medium" style="color:#DC2626" x-text="'— ' + formatNum(calcEmployee(selectedEmployee, taxReliefs[selectedEmployee.id]||0).paye)"></td>
+                </tr>
+                <tr class="border-t-2 border-green-200" style="background:#166534">
+                  <td class="px-4 py-3 font-bold text-white text-base" style="font-family:'Lexend',sans-serif">NET PAY</td>
+                  <td class="px-4 py-3 text-right font-bold text-white text-lg" style="font-family:'Lexend',sans-serif" x-text="formatNum(calcEmployee(selectedEmployee, taxReliefs[selectedEmployee.id]||0).netPay)"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Employer contributions -->
+          <div class="rounded-xl p-4 mb-4" style="background:#f8fafc;border:1px solid #e2e8f0">
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Employer Contributions (not deducted from pay)</p>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div class="flex justify-between"><span class="text-slate-500">Employer SSNIT Tier 1 (8%)</span><span class="font-medium text-slate-700" x-text="'GHS ' + formatNum(calcEmployee(selectedEmployee).employerTier1)"></span></div>
+              <div class="flex justify-between"><span class="text-slate-500">Tier 2 Fund (5%)</span><span class="font-medium text-slate-700" x-text="'GHS ' + formatNum(calcEmployee(selectedEmployee).tier2)"></span></div>
+            </div>
+          </div>
+
+          <p class="text-xs text-slate-400">Generated: May 28, 2026 · HR_Admin · FMCP v2.0</p>
+        </div>
+
+        <div class="px-5 py-4 border-t border-slate-100 flex justify-end gap-3 flex-shrink-0" style="background:#fafbfc">
+          <button @click="showPayslipModal=false" class="btn-secondary text-sm py-2">Close</button>
+          <button @click="printPayslip()" class="flex items-center gap-2 text-sm py-2 px-4 rounded-xl font-semibold" style="background:#1e293b;color:#fff;border:none;cursor:pointer">
+            <i class="fa-solid fa-print text-xs"></i> Print Now
+          </button>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- CONFIRM DIALOG -->
+<!-- ══════════════════════════════════════════════════ -->
+<div x-show="showConfirm" x-cloak class="fixed inset-0 flex items-center justify-center" style="background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:60;">
+  <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-xs anim-modalIn">
+    <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style="background:#fee2e2">
+      <i class="fa-solid fa-triangle-exclamation text-xl" style="color:#DC2626"></i>
+    </div>
+    <h3 class="font-bold text-slate-800 text-center mb-2" style="font-family:'Lexend',sans-serif" x-text="confirmTitle"></h3>
+    <p class="text-sm text-slate-500 text-center mb-5" x-text="confirmMsg"></p>
+    <div class="flex gap-3">
+      <button @click="showConfirm=false" class="btn-secondary flex-1 justify-center text-sm py-2.5">Cancel</button>
+      <button @click="confirmActionFn && confirmActionFn(); showConfirm=false" class="btn-danger flex-1 justify-center text-sm py-2.5">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- IDLE WARNING MODAL -->
+<!-- ══════════════════════════════════════════════════ -->
+<div x-show="showIdleWarning" x-cloak class="fixed inset-0 flex items-center justify-center" style="background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:70;">
+  <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm anim-modalIn">
+    <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 anim-pulseDot" style="background:#fef9c3">
+      <i class="fa-solid fa-clock text-xl" style="color:#D97706"></i>
+    </div>
+    <h3 class="font-bold text-slate-800 text-center mb-2" style="font-family:'Lexend',sans-serif">Session About to Expire</h3>
+    <p class="text-sm text-slate-500 text-center mb-2">You have been idle. Your session will expire in:</p>
+    <p class="text-4xl font-bold text-center mb-5" style="color:#D97706;font-family:'Lexend',sans-serif" x-text="idleCountdown + 's'"></p>
+    <div class="flex gap-3">
+      <button @click="logout()" class="btn-secondary flex-1 justify-center text-sm py-2.5">Log Out Now</button>
+      <button @click="stayLoggedIn()" class="btn-primary flex-1 justify-center text-sm py-2.5" style="background:#16A34A">Stay Logged In</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- TOAST NOTIFICATIONS -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="fixed top-5 right-5 z-50 flex flex-col gap-2" style="z-index:999">
+  <template x-for="(toast, idx) in toastQueue" :key="toast.id">
+    <div class="rounded-xl p-4 shadow-xl flex items-start gap-3 anim-toastIn" style="min-width:300px;max-width:360px;background:#fff;border:1px solid #e2e8f0;">
+      <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+           :style="toast.type==='success' ? 'background:#dcfce7' : toast.type==='error' ? 'background:#fee2e2' : 'background:#e0f2fe'">
+        <i class="text-sm"
+           :class="toast.type==='success' ? 'fa-solid fa-circle-check' : toast.type==='error' ? 'fa-solid fa-circle-xmark' : 'fa-solid fa-circle-info'"
+           :style="toast.type==='success' ? 'color:#16A34A' : toast.type==='error' ? 'color:#DC2626' : 'color:#0284C7'"></i>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="font-bold text-slate-800 text-sm" style="font-family:'Lexend',sans-serif" x-text="toast.title"></p>
+        <p class="text-xs text-slate-500 mt-0.5" x-text="toast.msg"></p>
+      </div>
+      <button @click="removeToast(idx)" class="text-slate-300 hover:text-slate-500 flex-shrink-0" style="background:none;border:none;cursor:pointer"><i class="fa-solid fa-xmark text-xs"></i></button>
+    </div>
+  </template>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- ALPINE.JS COMPONENT -->
+<!-- ══════════════════════════════════════════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.14.1/cdn.min.js" defer></script>
+<script>
+document.addEventListener('alpine:init', () => {
+  Alpine.data('fmcp', () => ({
+
+    // ── Auth ──
+    isLoggedIn: false,
+    loginUsername: '',
+    loginPassword: '',
+    loginError: '',
+    loginLoading: false,
+    loginShake: false,
+    showLoginPassword: false,
+
+    // ── Session ──
+    _idleTimer: null,
+    _countdownInterval: null,
+    idleCountdown: 60,
+    showIdleWarning: false,
+
+    // ── Navigation ──
+    currentView: 'dashboard',
+    showUserMenu: false,
+
+    // ── Wizard ──
+    wizardStep: 1,
+
+    // ── Reliefs ──
+    taxReliefs: {},
+    reliefFlags: {},
+
+    // ── Modals ──
+    showAddEmployee: false,
+    addStep: 1,
+    isEditMode: false,
+    editEmpId: null,
+    newEmp: {},
+    addErrors: {},
+    previewCalc: {},
+    showEmployeeModal: false,
+    selectedEmployee: null,
+    selectedDocType: 'payslip',
+    showPayslipModal: false,
+
+    // ── Confirm ──
+    showConfirm: false,
+    confirmTitle: '',
+    confirmMsg: '',
+    confirmActionFn: null,
+
+    // ── Toasts ──
+    toastQueue: [],
+    _toastId: 0,
+
+    // ── Document requests ──
+    documentRequests: [
+      { id:1, name:'Nurse Amina Osei', document:'May 2026 Payslip', channel:'WhatsApp', timeAgo:'2 mins ago' },
+      { id:2, name:'Kofi Mensah', document:'SSNIT Contribution Summary', channel:'In-Person', timeAgo:'1 hr ago' },
+      { id:3, name:'Dr. Yaw Darko', document:'Employment Contract', channel:'Email', timeAgo:'3 hrs ago' },
+      { id:4, name:'Nurse Kwabena Frimpong', document:'May 2026 Payslip', channel:'WhatsApp', timeAgo:'5 hrs ago' },
+    ],
+
+    // ── GRA Bands (for display) ──
+    graBands: [
+      { label:'GHS 0 – 490/mo', rate: 0 },
+      { label:'GHS 490 – 600/mo', rate: 0.05 },
+      { label:'GHS 600 – 730/mo', rate: 0.10 },
+      { label:'GHS 730 – 3,730/mo', rate: 0.175 },
+      { label:'GHS 3,730 – 20,125/mo', rate: 0.25 },
+      { label:'GHS 20,125 – 50,125/mo', rate: 0.30 },
+      { label:'Above GHS 50,125/mo', rate: 0.35 },
+    ],
+
+    // ── Employees ──
+    employees: [
+      { id:1, name:'Dr. Emmanuel Kwesi Asante', role:'Senior Consultant', dept:'Internal Medicine', type:'Full-time', basicSalary:8500, nightShiftAllowance:800, riskAllowance:400, phone:'0244123456', email:'e.asante@franklyn.gh', bankName:'Ecobank', bankAccount:'0044123456789', momoNumber:null, biometric:'Verified', hoursWorked:160 },
+      { id:2, name:'Dr. Abena Sarpong', role:'General Practitioner', dept:'Outpatient', type:'Full-time', basicSalary:6200, nightShiftAllowance:600, riskAllowance:300, phone:'0277345678', email:'a.sarpong@franklyn.gh', bankName:'Stanbic', bankAccount:'9012345678', momoNumber:null, biometric:'Verified', hoursWorked:168 },
+      { id:3, name:'Nurse Amina Osei', role:'Senior Nurse', dept:'Maternity Ward', type:'Full-time', basicSalary:3200, nightShiftAllowance:480, riskAllowance:200, phone:'0559234567', email:null, momoNumber:'0559234567', bankName:null, bankAccount:null, biometric:'Verified', hoursWorked:172 },
+      { id:4, name:'Nurse Kwabena Frimpong', role:'Staff Nurse', dept:'Surgical Ward', type:'Full-time', basicSalary:2800, nightShiftAllowance:350, riskAllowance:150, phone:'0241567890', email:null, momoNumber:'0241567890', bankName:null, bankAccount:null, biometric:'Pending', hoursWorked:160 },
+      { id:5, name:'Kofi Mensah', role:'Ward Assistant', dept:'General Ward', type:'Full-time', basicSalary:1400, nightShiftAllowance:150, riskAllowance:100, phone:'0501234567', email:null, momoNumber:'0501234567', bankName:null, bankAccount:null, biometric:'Verified', hoursWorked:160 },
+      { id:6, name:'Mrs. Ama Boateng', role:'Administrative Officer', dept:'Administration', type:'Full-time', basicSalary:2600, nightShiftAllowance:0, riskAllowance:0, phone:'0243987654', email:'a.boateng@franklyn.gh', bankName:'FirstBank', bankAccount:'1234567890', momoNumber:null, biometric:'N/A', hoursWorked:160 },
+      { id:7, name:'Dr. Yaw Darko', role:'Locum Doctor', dept:'Emergency', type:'Locum', basicSalary:4800, nightShiftAllowance:600, riskAllowance:500, phone:'0278123456', email:'y.darko@franklyn.gh', bankName:'Ecobank', bankAccount:'0044987654321', momoNumber:null, biometric:'Manual Log', hoursWorked:96 },
+      { id:8, name:'Akosua Tetteh', role:'Night Shift Nurse', dept:'ICU', type:'Full-time', basicSalary:2900, nightShiftAllowance:520, riskAllowance:300, phone:null, email:null, momoNumber:null, bankName:null, bankAccount:null, biometric:'Verified', hoursWorked:180 },
+    ],
+
+    // ── Audit Log ──
+    auditLogs: [
+      { action:'Payslip printed by HR_Admin for Kwame Mensah', timestamp:'May 26, 2026 · 09:14 AM', type:'print' },
+      { action:'May 2026 payroll calculation run by HR_Admin', timestamp:'May 26, 2026 · 08:55 AM', type:'payroll' },
+      { action:'Payslip WhatsApp dispatch sent for Nurse Amina Osei', timestamp:'May 25, 2026 · 04:30 PM', type:'whatsapp' },
+      { action:'New staff record added: Dr. Yaw Darko (Locum) by SUPER_ADMIN', timestamp:'May 25, 2026 · 02:15 PM', type:'staff' },
+      { action:'Salary update for Dr. Abena Sarpong approved by CMO', timestamp:'May 24, 2026 · 11:00 AM', type:'salary' },
+      { action:'April SSNIT contribution report exported by HR_Admin', timestamp:'May 23, 2026 · 09:00 AM', type:'export' },
+      { action:'Bulk payslip dispatch completed for all 8 staff members', timestamp:'May 22, 2026 · 10:30 AM', type:'bulk' },
+      { action:'GRA PAYE Return for April 2026 submitted by HR_Admin', timestamp:'May 20, 2026 · 03:45 PM', type:'compliance' },
+      { action:'April payroll locked by CMO_Admin — GHS 52,140 net disbursement', timestamp:'May 19, 2026 · 11:15 AM', type:'payroll' },
+      { action:'Staff record updated: Nurse Kwabena Frimpong — MoMo number added', timestamp:'May 15, 2026 · 02:00 PM', type:'staff' },
+    ],
+
+    // ── Search ──
+    searchQuery: '',
+    filterDept: '',
+
+    // ── Computed ──
+    get missingDetailsCount() {
+      return this.employees.filter(e => !e.bankAccount && !e.momoNumber).length;
+    },
+    get totalPayrollCost() {
+      return this.employees.reduce((sum, e) => {
+        const c = this.calcEmployee(e, this.taxReliefs[e.id] || 0);
+        return sum + c.grossPay + c.employerTier1 + c.tier2;
+      }, 0);
+    },
+    get filteredEmployees() {
+      return this.employees.filter(e => {
+        const q = this.searchQuery.toLowerCase();
+        const matchQ = !q || e.name.toLowerCase().includes(q) || e.role.toLowerCase().includes(q) || e.dept.toLowerCase().includes(q);
+        const matchD = !this.filterDept || e.dept === this.filterDept;
+        return matchQ && matchD;
+      });
+    },
+
+    // ── Tax Calc ──
+    calculatePAYE(chargeableIncome) {
+      const bands = [
+        { limit:490, rate:0.000 },{ limit:110, rate:0.050 },
+        { limit:130, rate:0.100 },{ limit:3000, rate:0.175 },
+        { limit:16395, rate:0.250 },{ limit:30000, rate:0.300 },
+        { limit:Infinity, rate:0.350 },
+      ];
+      let paye = 0, remaining = chargeableIncome;
+      for (const band of bands) {
+        if (remaining <= 0) break;
+        const taxable = band.limit === Infinity ? remaining : Math.min(remaining, band.limit);
+        paye += taxable * band.rate;
+        remaining -= taxable;
+      }
+      return Math.round(paye * 100) / 100;
+    },
+    calcEmployee(emp, relief = 0) {
+      const employeeSsnit = Math.round(emp.basicSalary * 0.055 * 100) / 100;
+      const grossPay = emp.basicSalary + (emp.nightShiftAllowance || 0) + (emp.riskAllowance || 0);
+      const chargeableIncome = Math.max(0, Math.round((grossPay - employeeSsnit - (relief||0)) * 100) / 100);
+      const paye = this.calculatePAYE(chargeableIncome);
+      const employerTier1 = Math.round(emp.basicSalary * 0.08 * 100) / 100;
+      const tier2 = Math.round(emp.basicSalary * 0.05 * 100) / 100;
+      const netPay = Math.round((grossPay - employeeSsnit - paye) * 100) / 100;
+      return { grossPay, employeeSsnit, chargeableIncome, paye, employerTier1, tier2, netPay,
+               totalDeductions: Math.round((employeeSsnit + paye) * 100) / 100 };
+    },
+
+    // ── Helpers ──
+    formatNum(n) {
+      if (n === null || n === undefined || isNaN(n)) return '0.00';
+      return Number(n).toLocaleString('en-GH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    },
+    getInitials(name) {
+      if (!name) return '?';
+      const parts = name.replace(/^(Dr\.|Mrs\.|Mr\.|Nurse)\s*/i, '').split(' ');
+      return (parts[0]?.[0] || '') + (parts[1]?.[0] || '');
+    },
+    getAvatarColor(name) {
+      const colors = ['#1d4ed8','#7c3aed','#0891b2','#059669','#d97706','#be185d','#9d174d','#dc2626','#0369a1','#7e22ce'];
+      if (!name) return colors[0];
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      return colors[Math.abs(hash) % colors.length];
+    },
+    pageTitle() {
+      const titles = { dashboard:'Command Centre', wizard:'Payroll Wizard', staff:'Staff & Documents', compliance:'Compliance & Rates' };
+      return titles[this.currentView] || 'FMCP';
+    },
+    nowTimestamp() {
+      return new Date().toLocaleString('en-GH', { month:'long', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    },
+
+    // ── Auth ──
+    doLogin() {
+      if (!this.loginUsername || !this.loginPassword) {
+        this.loginError = 'Please enter your username and password.';
+        this._triggerShake();
+        return;
+      }
+      this.loginLoading = true;
+      this.loginError = '';
+      setTimeout(() => {
+        this.loginLoading = false;
+        if (this.loginUsername === '12345' && this.loginPassword === '12345') {
+          this.isLoggedIn = true;
+          this.loginPassword = '';
+          this.loginError = '';
+          this.addAuditLog('Login by HR_Admin — session started', 'compliance');
+          this.$nextTick(() => this.startIdleTimer());
+        } else {
+          this.loginPassword = '';
+          this.loginError = 'Invalid credentials. Please try again.';
+          this._triggerShake();
+        }
+      }, 1100);
+    },
+    _triggerShake() {
+      this.loginShake = false;
+      this.$nextTick(() => {
+        this.loginShake = true;
+        setTimeout(() => { this.loginShake = false; }, 500);
+      });
+    },
+    logout() {
+      this.isLoggedIn = false;
+      this.showIdleWarning = false;
+      this.showConfirm = false;
+      if (this._idleTimer) clearTimeout(this._idleTimer);
+      if (this._countdownInterval) clearInterval(this._countdownInterval);
+      this.loginUsername = '';
+      this.loginPassword = '';
+      this.currentView = 'dashboard';
+    },
+    confirmLogout() {
+      this.showUserMenu = false;
+      this.openConfirm('Sign Out', 'Are you sure you want to sign out of FMCP?', () => this.logout());
+    },
+    startIdleTimer() {
+      if (this._idleTimer) clearTimeout(this._idleTimer);
+      this._idleTimer = setTimeout(() => this.showIdlePrompt(), 10 * 60 * 1000);
+    },
+    resetIdle() {
+      if (!this.isLoggedIn || this.showIdleWarning) return;
+      this.startIdleTimer();
+    },
+    showIdlePrompt() {
+      this.idleCountdown = 60;
+      this.showIdleWarning = true;
+      if (this._countdownInterval) clearInterval(this._countdownInterval);
+      this._countdownInterval = setInterval(() => {
+        this.idleCountdown--;
+        if (this.idleCountdown <= 0) {
+          clearInterval(this._countdownInterval);
+          this.logout();
+        }
+      }, 1000);
+    },
+    stayLoggedIn() {
+      this.showIdleWarning = false;
+      if (this._countdownInterval) clearInterval(this._countdownInterval);
+      this.startIdleTimer();
+    },
+
+    // ── Init ──
+    init() {
+      const events = ['mousemove','keydown','click','scroll','touchstart'];
+      events.forEach(ev => document.addEventListener(ev, () => this.resetIdle(), { passive: true }));
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          this.showAddEmployee = false;
+          this.showEmployeeModal = false;
+          this.showPayslipModal = false;
+          this.showConfirm = false;
+          this.showUserMenu = false;
+        }
+      });
+    },
+
+    // ── Staff CRUD ──
+    _freshEmp() {
+      return { name:'', role:'', dept:'', type:'Full-time', basicSalary:0, nightShiftAllowance:0, riskAllowance:0, phone:'', email:'', bankName:'', bankAccount:'', momoNumber:'', biometric:'Pending', hoursWorked:160, paymentMethod:'bank' };
+    },
+    openAddEmployee() {
+      this.newEmp = this._freshEmp();
+      this.addErrors = {};
+      this.addStep = 1;
+      this.isEditMode = false;
+      this.editEmpId = null;
+      this.previewCalc = {};
+      this.showAddEmployee = true;
+    },
+    openEditEmployee(emp) {
+      this.newEmp = { ...emp, paymentMethod: emp.bankAccount ? 'bank' : emp.momoNumber ? 'momo' : 'bank' };
+      this.addErrors = {};
+      this.addStep = 1;
+      this.isEditMode = true;
+      this.editEmpId = emp.id;
+      this.computePreview();
+      this.showAddEmployee = true;
+    },
+    validateAddStep() {
+      this.addErrors = {};
+      if (this.addStep === 1) {
+        if (!this.newEmp.name?.trim()) this.addErrors.name = 'Full name is required.';
+        if (!this.newEmp.role?.trim()) this.addErrors.role = 'Job title is required.';
+        if (!this.newEmp.dept) this.addErrors.dept = 'Department is required.';
+        if (Object.keys(this.addErrors).length === 0) this.addStep = 2;
+      } else if (this.addStep === 2) {
+        if (!this.newEmp.basicSalary || this.newEmp.basicSalary < 100) this.addErrors.basicSalary = 'Salary must be at least GHS 100.';
+        if (Object.keys(this.addErrors).length === 0) this.addStep = 3;
+      }
+    },
+    computePreview() {
+      if (!this.newEmp.basicSalary || this.newEmp.basicSalary <= 0) { this.previewCalc = {}; return; }
+      const tmpEmp = {
+        basicSalary: Number(this.newEmp.basicSalary) || 0,
+        nightShiftAllowance: Number(this.newEmp.nightShiftAllowance) || 0,
+        riskAllowance: Number(this.newEmp.riskAllowance) || 0,
+      };
+      this.previewCalc = this.calcEmployee(tmpEmp, 0);
+    },
+    submitEmployee() {
+      if (this.isEditMode) {
+        const idx = this.employees.findIndex(e => e.id === this.editEmpId);
+        if (idx >= 0) {
+          const updated = {
+            ...this.employees[idx],
+            ...this.newEmp,
+            basicSalary: Number(this.newEmp.basicSalary),
+            nightShiftAllowance: Number(this.newEmp.nightShiftAllowance) || 0,
+            riskAllowance: Number(this.newEmp.riskAllowance) || 0,
+            hoursWorked: Number(this.newEmp.hoursWorked) || 160,
+            bankAccount: this.newEmp.paymentMethod === 'bank' ? this.newEmp.bankAccount : null,
+            bankName: this.newEmp.paymentMethod === 'bank' ? this.newEmp.bankName : null,
+            momoNumber: this.newEmp.paymentMethod === 'momo' ? this.newEmp.momoNumber : null,
+            phone: this.newEmp.phone || null,
+            email: this.newEmp.email || null,
+          };
+          this.employees.splice(idx, 1, updated);
+          this.addAuditLog('Staff record updated: ' + updated.name + ' by HR_Admin', 'staff');
+          this.showToastMsg('success','Staff Updated', updated.name + ' has been updated.');
+        }
+      } else {
+        const maxId = this.employees.reduce((m, e) => Math.max(m, e.id), 0);
+        const emp = {
+          id: maxId + 1,
+          name: this.newEmp.name,
+          role: this.newEmp.role,
+          dept: this.newEmp.dept,
+          type: this.newEmp.type,
+          basicSalary: Number(this.newEmp.basicSalary),
+          nightShiftAllowance: Number(this.newEmp.nightShiftAllowance) || 0,
+          riskAllowance: Number(this.newEmp.riskAllowance) || 0,
+          phone: this.newEmp.phone || null,
+          email: this.newEmp.email || null,
+          bankName: this.newEmp.paymentMethod === 'bank' ? (this.newEmp.bankName || null) : null,
+          bankAccount: this.newEmp.paymentMethod === 'bank' ? (this.newEmp.bankAccount || null) : null,
+          momoNumber: this.newEmp.paymentMethod === 'momo' ? (this.newEmp.momoNumber || null) : null,
+          biometric: 'Pending',
+          hoursWorked: Number(this.newEmp.hoursWorked) || 160,
+        };
+        this.employees.push(emp);
+        this.addAuditLog('New staff record added: ' + emp.name + ' (' + emp.type + ') by HR_Admin', 'staff');
+        this.showToastMsg('success','Staff Added', emp.name + ' has been added to payroll.');
+      }
+      this.showAddEmployee = false;
+    },
+    confirmDeleteEmployee(emp) {
+      this.openConfirm('Remove Staff Member', 'Are you sure you want to remove ' + emp.name + ' from payroll? This action cannot be undone.', () => {
+        this.employees = this.employees.filter(e => e.id !== emp.id);
+        this.addAuditLog('Staff record removed: ' + emp.name + ' by HR_Admin', 'staff');
+        this.showToastMsg('success','Staff Removed', emp.name + ' has been removed from payroll.');
+      });
+    },
+
+    // ── Profile Modal ──
+    openEmployeeProfile(emp) {
+      this.selectedEmployee = emp;
+      this.selectedDocType = 'payslip';
+      this.showEmployeeModal = true;
+    },
+
+    // ── Dispatch ──
+    dispatchPrint() {
+      this.showPayslipModal = true;
+      this.showEmployeeModal = false;
+    },
+    dispatchWhatsApp(emp) {
+      if (!emp.phone) {
+        this.showToastMsg('error','No Phone Number', emp.name + ' has no phone number on file.');
+        return;
+      }
+      this.addAuditLog('Payslip WhatsApp dispatch sent for ' + emp.name, 'whatsapp');
+      this.showToastMsg('success','WhatsApp Sent', 'Encrypted PDF link sent to ' + emp.name + ' at ' + emp.phone);
+    },
+    dispatchEmail(emp) {
+      if (!emp.email) {
+        this.showToastMsg('error','No Email Address', emp.name + ' has no email address on file.');
+        return;
+      }
+      this.addAuditLog('Payslip email dispatched to ' + emp.name + ' <' + emp.email + '>', 'bulk');
+      this.showToastMsg('info','Email Dispatched', 'Payslip sent to ' + emp.email);
+    },
+    printPayslip() {
+      this.addAuditLog('Payslip printed by HR_Admin for ' + (this.selectedEmployee?.name || ''), 'print');
+      this.showToastMsg('success','Sent to Printer', 'Payslip for ' + this.selectedEmployee?.name + ' sent to printer.');
+      window.print();
+    },
+
+    // ── Wizard ──
+    lockAndGenerate() {
+      this.wizardStep = 3;
+      this.addAuditLog('May 2026 payroll locked by HR_Admin — GHS ' + this.formatNum(this.employees.reduce((s,e)=>s+this.calcEmployee(e,this.taxReliefs[e.id]||0).netPay,0)) + ' net', 'payroll');
+      this.showToastMsg('success','Payroll Locked','May 2026 payroll has been locked and verified.');
+    },
+
+    // ── Downloads ──
+    downloadBankCSV() {
+      const rows = this.employees.filter(e => e.bankAccount);
+      const header = 'Employee Name,Bank Name,Account Number,Net Pay (GHS)\n';
+      const body = rows.map(e => `"${e.name}","${e.bankName||''}","${e.bankAccount}",${this.calcEmployee(e, this.taxReliefs[e.id]||0).netPay.toFixed(2)}`).join('\n');
+      this._downloadBlob(header+body, 'FMC_May2026_Bank_Bulk.csv', 'text/csv');
+      this.addAuditLog('Bank Bulk Export CSV downloaded for May 2026 by HR_Admin', 'export');
+      this.showToastMsg('success','CSV Downloaded','FMC_May2026_Bank_Bulk.csv saved to your device.');
+    },
+    downloadMoMoCSV() {
+      const rows = this.employees.filter(e => e.momoNumber);
+      const header = 'Employee Name,MoMo Number,Network,Amount (GHS)\n';
+      const body = rows.map(e => `"${e.name}","${e.momoNumber}","MTN MoMo",${this.calcEmployee(e, this.taxReliefs[e.id]||0).netPay.toFixed(2)}`).join('\n');
+      this._downloadBlob(header+body, 'FMC_May2026_MoMo_Schedule.csv', 'text/csv');
+      this.addAuditLog('MoMo Schedule CSV downloaded for May 2026 by HR_Admin', 'export');
+      this.showToastMsg('success','CSV Downloaded','FMC_May2026_MoMo_Schedule.csv saved to your device.');
+    },
+    _downloadBlob(content, filename, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },
+
+    // ── Relief toggles ──
+    toggleRelief(empId, type, event) {
+      if (!this.reliefFlags[empId]) this.reliefFlags[empId] = { marriage: false, childEdu: false };
+      this.reliefFlags[empId][type] = event.target.checked;
+      const marriage = this.reliefFlags[empId].marriage ? 200 : 0;
+      const childEdu = this.reliefFlags[empId].childEdu ? 300 : 0;
+      this.taxReliefs[empId] = marriage + childEdu;
+      // Force Alpine reactivity
+      this.taxReliefs = { ...this.taxReliefs };
+    },
+
+    // ── Confirm ──
+    openConfirm(title, msg, fn) {
+      this.confirmTitle = title;
+      this.confirmMsg = msg;
+      this.confirmActionFn = fn;
+      this.showConfirm = true;
+    },
+
+    // ── Doc Requests ──
+    handleDocRequest(req) {
+      this.documentRequests = this.documentRequests.filter(r => r.id !== req.id);
+      this.addAuditLog('Document dispatched: ' + req.document + ' for ' + req.name + ' via ' + req.channel, 'bulk');
+      this.showToastMsg('success','Document Dispatched', req.document + ' sent to ' + req.name + ' via ' + req.channel + '.');
+    },
+
+    // ── Audit ──
+    addAuditLog(action, type) {
+      this.auditLogs.unshift({ action, timestamp: this.nowTimestamp(), type });
+    },
+
+    // ── Toast ──
+    showToastMsg(type, title, msg) {
+      const id = ++this._toastId;
+      this.toastQueue.push({ id, type, title, msg });
+      setTimeout(() => this.removeToastById(id), 4500);
+    },
+    removeToast(idx) {
+      this.toastQueue.splice(idx, 1);
+    },
+    removeToastById(id) {
+      this.toastQueue = this.toastQueue.filter(t => t.id !== id);
+    },
+  }));
+});
+</script>
+</body>
+</html>
